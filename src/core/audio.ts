@@ -8,43 +8,30 @@ export type Track = 'menu' | 'game';
 
 const midi = (n: number) => 440 * Math.pow(2, (n - 69) / 12);
 
-interface Song {
+/** One chord/bass note per bar of 8 eighth notes; melody is a list of MIDI notes or rests. */
+export interface Song {
   bpm: number;
   melody: (number | null)[];
   chords: number[][];
   bass: number[];
   shaker: boolean;
+  /** Four-on-the-floor kick drum. */
+  kick?: boolean;
 }
 
-// Original compositions (G major, pentatonic-leaning), one chord per bar of 8 eighth notes.
-const SONGS: Record<Track, Song> = {
-  menu: {
-    bpm: 92,
-    melody: [
-      74, null, 76, 74, 71, null, 67, null, 69, 71, 74, null, 71, null, null, null,
-      76, null, 79, 76, 74, null, 71, null, 69, null, 71, 69, 67, null, null, null,
-      71, null, 74, 71, 69, null, 64, null, 67, 69, 71, null, 74, null, 76, null,
-      79, null, 76, 74, 71, null, 74, null, 69, null, 66, 69, 67, null, null, null,
-    ],
-    chords: [[67, 71, 74], [64, 67, 71], [60, 64, 67], [62, 66, 69], [64, 67, 71], [60, 64, 67], [60, 64, 67], [62, 66, 69]],
-    bass: [43, 40, 36, 38, 40, 36, 36, 38],
-    shaker: false,
-  },
-  game: {
-    bpm: 128,
-    melody: [
-      67, 71, 74, 71, 76, null, 74, null, 72, 76, 79, 76, 74, null, 71, null,
-      69, 72, 76, 72, 74, null, 71, 69, 67, null, 71, null, 69, null, null, null,
-      67, 71, 74, 71, 79, null, 76, null, 72, 76, 81, 79, 76, null, 74, null,
-      72, 71, 69, 72, 71, 69, 67, 66, 67, null, 74, null, 67, null, null, null,
-    ],
-    chords: [[67, 71, 74], [60, 64, 67], [60, 64, 69], [62, 66, 69], [67, 71, 74], [60, 64, 67], [62, 66, 69], [55, 62, 67]],
-    bass: [43, 36, 45, 38, 43, 36, 38, 43],
-    shaker: true,
-  },
-};
+/**
+ * Instrument family used for melody and SFX:
+ * bell = sine chimes, synth = filtered detuned saws, chip = square/pulse, marimba = woody plucks.
+ */
+export type Voice = 'bell' | 'synth' | 'chip' | 'marimba';
+
+export interface SoundProfile {
+  voice: Voice;
+  music: Record<Track, Song>;
+}
 
 class AudioEngine {
+  private profile: SoundProfile | null = null;
   private ctx: AudioContext | null = null;
   private master!: GainNode;
   private musicBus!: GainNode;
@@ -103,6 +90,13 @@ class AudioEngine {
     this.applyVolumes();
   }
 
+  /** Switches instruments and music; the current track continues seamlessly with the new song. */
+  setProfile(profile: SoundProfile) {
+    if (this.profile === profile) return;
+    this.profile = profile;
+    this.step = 0;
+  }
+
   playMusic(track: Track) {
     if (this.track === track) return;
     this.track = track;
@@ -126,8 +120,8 @@ class AudioEngine {
   }
 
   private schedule() {
-    if (!this.ctx || !this.track) return;
-    const song = SONGS[this.track];
+    if (!this.ctx || !this.track || !this.profile) return;
+    const song = this.profile.music[this.track];
     const eighth = 60 / song.bpm / 2;
     while (this.nextTime < this.ctx.currentTime + 0.2) {
       const t = this.nextTime;
@@ -141,6 +135,7 @@ class AudioEngine {
       }
       if (i % 8 === 4) this.pluck(midi(song.bass[bar] + 7), t, eighth * 2);
       if (song.shaker) this.shaker(t, i % 2 ? 0.05 : 0.025);
+      if (song.kick && i % 2 === 0) this.kick(t);
       this.nextTime += eighth;
       this.step++;
     }
@@ -165,10 +160,44 @@ class AudioEngine {
     return o;
   }
 
+  private get voice(): Voice {
+    return this.profile?.voice ?? 'bell';
+  }
+
+  /** Melodic note in the current theme's instrument. Name kept from the original bell-only engine. */
   private bell(dest: AudioNode, f: number, t: number, peak: number, dur: number) {
-    this.osc('sine', f, t, dur, peak, dest);
-    this.osc('sine', f * 3.01, t, dur * 0.25, peak * 0.25, dest);
-    this.osc('triangle', f * 2, t, dur * 0.4, peak * 0.12, dest);
+    switch (this.voice) {
+      case 'bell':
+        this.osc('sine', f, t, dur, peak, dest);
+        this.osc('sine', f * 3.01, t, dur * 0.25, peak * 0.25, dest);
+        this.osc('triangle', f * 2, t, dur * 0.4, peak * 0.12, dest);
+        break;
+      case 'synth': {
+        const ctx = this.ctx!;
+        const lp = ctx.createBiquadFilter();
+        lp.type = 'lowpass';
+        lp.Q.value = 6;
+        lp.frequency.setValueAtTime(Math.min(9000, f * 8), t);
+        lp.frequency.exponentialRampToValueAtTime(Math.max(200, f * 1.5), t + dur * 0.5);
+        lp.connect(dest);
+        this.osc('sawtooth', f, t, dur * 0.55, peak * 0.5, lp).detune.value = -8;
+        this.osc('sawtooth', f, t, dur * 0.55, peak * 0.5, lp).detune.value = 8;
+        break;
+      }
+      case 'chip':
+        this.osc('square', f, t, Math.min(dur, 0.22), peak * 0.45, dest, 0.002);
+        break;
+      case 'marimba':
+        this.osc('sine', f, t, dur * 0.45, peak, dest, 0.002);
+        this.osc('sine', f * 4, t, 0.05, peak * 0.3, dest, 0.001);
+        this.osc('triangle', f * 2, t, dur * 0.15, peak * 0.15, dest, 0.002);
+        break;
+    }
+  }
+
+  private kick(t: number) {
+    const o = this.osc('sine', 150, t, 0.25, 0.5, this.musicBus, 0.002);
+    o.frequency.exponentialRampToValueAtTime(42, t + 0.2);
   }
 
   private pad(f: number, t: number, dur: number) {
@@ -180,11 +209,11 @@ class AudioEngine {
     for (const detune of [-6, 6]) {
       const o = ctx.createOscillator();
       const g = ctx.createGain();
-      o.type = 'triangle';
+      o.type = this.voice === 'synth' ? 'sawtooth' : this.voice === 'chip' ? 'square' : 'triangle';
       o.frequency.value = f;
       o.detune.value = detune;
       g.gain.setValueAtTime(0.0001, t);
-      g.gain.linearRampToValueAtTime(0.035, t + dur * 0.3);
+      g.gain.linearRampToValueAtTime(this.voice === 'chip' ? 0.012 : 0.035, t + dur * 0.3);
       g.gain.linearRampToValueAtTime(0.0001, t + dur);
       o.connect(g).connect(filter);
       o.start(t);
@@ -193,7 +222,8 @@ class AudioEngine {
   }
 
   private pluck(f: number, t: number, dur: number) {
-    this.osc('triangle', f, t, dur, 0.16, this.musicBus);
+    const type: OscillatorType = this.voice === 'synth' ? 'sawtooth' : this.voice === 'chip' ? 'square' : 'triangle';
+    this.osc(type, f, t, dur, type === 'triangle' ? 0.16 : 0.07, this.musicBus);
   }
 
   private shaker(t: number, peak: number) {
@@ -227,7 +257,9 @@ class AudioEngine {
         if (t - this.lastPellet < 0.05) return;
         this.lastPellet = t;
         this.pelletFlip = !this.pelletFlip;
-        this.osc('triangle', this.pelletFlip ? 1318 : 1568, t, 0.07, 0.12, this.sfxBus);
+        const blip: Record<Voice, OscillatorType> = { bell: 'triangle', synth: 'sawtooth', chip: 'square', marimba: 'sine' };
+        const [lo, hi] = this.voice === 'chip' ? [494, 659] : this.voice === 'marimba' ? [880, 1047] : [1318, 1568];
+        this.osc(blip[this.voice], this.pelletFlip ? lo : hi, t, 0.07, this.voice === 'bell' || this.voice === 'marimba' ? 0.12 : 0.05, this.sfxBus);
         break;
       }
       case 'crystal':
