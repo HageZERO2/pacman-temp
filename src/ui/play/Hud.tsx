@@ -1,6 +1,7 @@
 import { Pause, Zap } from 'lucide-react';
 import type { HudState } from '../../game/bridge';
-import { LEVELS } from '../../game/levels';
+import { levelLook } from '../../themes';
+import { useTheme } from '../hooks/useTheme';
 import type { SkinId } from '../../game/types';
 import { ArcadeButton } from '../components/ArcadeButton';
 import { CoinIcon } from '../components/CoinCounter';
@@ -16,7 +17,8 @@ interface Props {
 }
 
 export function Hud({ hud, best, coins, skin, onPause, canPause }: Props) {
-  const level = LEVELS[hud.levelIndex];
+  const theme = useTheme();
+  const level = levelLook(theme, hud.levelIndex);
   return (
     <header className="hud">
       <div className="hud__cell hud__cell--score">
@@ -48,12 +50,12 @@ export function Hud({ hud, best, coins, skin, onPause, canPause }: Props) {
       </div>
       <ArcadeButton variant="ghost" size="sm" className="hud__pause" icon={<Pause size={18} />} onClick={onPause} disabled={!canPause} aria-label="Pause" />
       <div className={`hud__power ${hud.power > 0 ? 'is-on' : ''}`} aria-hidden={hud.power === 0}>
-        <span>Frost power</span>
+        <span>{theme.labels.power}</span>
         <i style={{ transform: `scaleX(${hud.power})` }} />
       </div>
       {hud.boost && (
         <div className="hud__boost">
-          <Zap size={14} /> Sleigh boost
+          <Zap size={14} /> {theme.labels.boost}
         </div>
       )}
     </header>

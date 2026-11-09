@@ -47,7 +47,7 @@
     height: 38%;
     background:
       radial-gradient(ellipse 40% 50% at 30% 50%, rgba(54, 217, 127, 0.22), transparent 70%),
-      radial-gradient(ellipse 35% 45% at 62% 40%, rgba(127, 232, 255, 0.18), transparent 70%),
+      radial-gradient(ellipse 35% 45% at 62% 40%, rgba(var(--secondary-rgb), 0.18), transparent 70%),
       radial-gradient(ellipse 30% 40% at 85% 60%, rgba(190, 110, 255, 0.16), transparent 70%);
     filter: blur(30px);
     animation: aurora 16s ease-in-out infinite alternate;
