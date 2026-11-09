@@ -1,22 +1,20 @@
-import { Snowfall } from './Snowfall';
-import { Garland } from './Garland';
-import { WinterScene } from './WinterScene';
+import { BACKDROPS } from '../backdrops';
 import { useProgress } from '../hooks/useProgress';
 import { useReducedMotion } from '../hooks/useMediaQuery';
+import { useTheme } from '../hooks/useTheme';
 
-/** Shared animated backdrop for every menu screen. */
+/** Shared animated backdrop for every screen; crossfades when the theme changes. */
 export function Backdrop({ dimmed = false }: { dimmed?: boolean }) {
   const { settings } = useProgress();
+  const theme = useTheme();
   const reducedMotion = useReducedMotion();
   const calm = settings.reducedEffects || reducedMotion;
+  const Scene = BACKDROPS[theme.id];
   return (
     <div className={`backdrop ${dimmed ? 'backdrop--dimmed' : ''} ${calm ? 'backdrop--calm' : ''}`} aria-hidden="true">
-      <div className="backdrop__sky" />
-      <div className="backdrop__aurora" />
-      <div className="backdrop__moon" />
-      <WinterScene />
-      <Snowfall density={calm ? 0.25 : dimmed ? 0.5 : 1} />
-      {!dimmed && <Garland />}
+      <div className="backdrop__layer" key={theme.id}>
+        <Scene dimmed={dimmed} calm={calm} />
+      </div>
     </div>
   );
 }
