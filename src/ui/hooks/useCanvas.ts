@@ -3,12 +3,14 @@ import { useEffect, useRef } from 'react';
 /**
  * Canvas helper: sizes the canvas for the device pixel ratio and runs `draw` once,
  * or every animation frame when `animate` is set. Animation stops on unmount.
+ * Change `redrawKey` to force a static canvas to repaint (e.g. after a theme switch).
  */
 export function useCanvas(
   draw: (ctx: CanvasRenderingContext2D, w: number, h: number, t: number) => void,
   width: number,
   height: number,
   animate = false,
+  redrawKey: string | number = '',
 ) {
   const ref = useRef<HTMLCanvasElement>(null);
   const drawRef = useRef(draw);
@@ -33,7 +35,7 @@ export function useCanvas(
     };
     frame(start);
     return () => cancelAnimationFrame(raf);
-  }, [width, height, animate]);
+  }, [width, height, animate, redrawKey]);
 
   return ref;
 }
