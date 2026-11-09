@@ -1,4 +1,4 @@
-import type { Dir, EnemyKind, MaybeDir } from '../game/types';
+import type { Dir, EnemyKind, MaybeDir } from '../../game/types';
 
 type Ctx = CanvasRenderingContext2D;
 const TAU = Math.PI * 2;
