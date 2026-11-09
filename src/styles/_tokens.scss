@@ -1,28 +1,30 @@
+// Design tokens. Values come from per-theme CSS variables (see styles/themes).
 // Design tokens
-$night-0: #03060f;
+$night-0: var(--c-bg);
 $night-1: #071230;
 $night-2: #0e1d47;
 $night-3: #182b63;
-$ice: #7fe8ff;
-$ice-soft: #c9f5ff;
-$gold: #ffcf3f;
-$gold-deep: #c77700;
-$red: #ff3b4e;
-$red-deep: #a10f27;
-$green: #36d97f;
+$ice: var(--c-secondary);
+$ice-soft: var(--c-secondary-soft);
+$gold: var(--c-primary);
+$gold-deep: var(--c-primary-deep);
+$red: var(--c-danger);
+$red-deep: var(--c-danger-deep);
+$green: var(--c-success);
 $pine: #0c4a33;
-$snow: #f4fbff;
-$ink: #1b0f05;
+$snow: var(--c-text);
+$ink: var(--c-ink);
 
-$font-display: 'Bungee', 'Impact', sans-serif;
-$font-shade: 'Bungee Shade', 'Bungee', 'Impact', sans-serif;
-$font-pixel: 'Press Start 2P', monospace;
-$font-body: 'Fredoka Variable', 'Fredoka', system-ui, sans-serif;
+$font-display: var(--font-display);
+$font-shade: var(--font-logo);
+$font-pixel: var(--font-hud);
+$font-body: var(--font-body);
 
 $ease-pop: cubic-bezier(0.2, 1.4, 0.4, 1);
 
+// Christmas-only snow resting on panels.
 @mixin snowcap($height: 18px) {
-  &::before {
+  html[data-theme='christmas'] &::before {
     content: '';
     position: absolute;
     left: -4px;
@@ -48,8 +50,9 @@ $ease-pop: cubic-bezier(0.2, 1.4, 0.4, 1);
 @mixin bezel {
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 40%),
-    linear-gradient(180deg, rgba(14, 29, 71, 0.92), rgba(5, 10, 28, 0.94));
-  border: 2px solid rgba(127, 232, 255, 0.25);
+    linear-gradient(180deg, var(--panel-1), var(--panel-2));
+  border: 2px solid rgba(var(--secondary-rgb), 0.25);
+  border-radius: var(--radius-panel, 18px);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.12),
     inset 0 -6px 18px rgba(0, 0, 0, 0.35),
