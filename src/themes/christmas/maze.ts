@@ -1,5 +1,15 @@
-import type { LevelTheme } from '../game/levels';
-import type { Maze } from '../game/maze';
+import type { Maze } from '../../game/maze';
+import type { MazeDrawOptions } from '../types';
+
+export interface ChristmasLevelStyle {
+  sky: [string, string];
+  wall: string;
+  wallDark: string;
+  wallEdge: string;
+  style: 'hedge' | 'ice' | 'wood';
+}
+
+type LevelTheme = ChristmasLevelStyle;
 
 type Ctx = CanvasRenderingContext2D;
 
@@ -102,19 +112,12 @@ function pattern(ctx: Ctx, theme: LevelTheme, w: number, h: number, t: number) {
   }
 }
 
-export interface MazeArtOptions {
-  /** Starry sky behind the maze. */
-  sky?: boolean;
-  /** Snow caps, gate and glow — skip for tiny previews. */
-  details?: boolean;
-}
-
-export function drawMaze(ctx: Ctx, maze: Maze, theme: LevelTheme, t: number, opts: MazeArtOptions = {}) {
-  const { sky = true, details = true } = opts;
+export function drawChristmasMaze(ctx: Ctx, maze: Maze, theme: ChristmasLevelStyle, t: number, opts: MazeDrawOptions = {}) {
+  const { background = true, details = true } = opts;
   const w = maze.width * t;
   const h = maze.height * t;
 
-  if (sky) {
+  if (background) {
     const g = ctx.createLinearGradient(0, 0, 0, h);
     g.addColorStop(0, theme.sky[0]);
     g.addColorStop(1, theme.sky[1]);

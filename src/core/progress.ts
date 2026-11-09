@@ -2,6 +2,7 @@ import { loadSave, writeSave, defaultSave, type SaveData, type Settings } from '
 import { getSkin } from './skins';
 import { LEVELS } from '../game/levels';
 import type { DifficultyId, SkinId } from '../game/types';
+import type { ThemeId } from '../themes/types';
 
 type Listener = () => void;
 
@@ -29,6 +30,10 @@ class ProgressStore {
 
   setDifficulty(difficulty: DifficultyId) {
     this.set({ ...this.state, difficulty });
+  }
+
+  setTheme(theme: ThemeId) {
+    if (theme !== this.state.theme) this.set({ ...this.state, theme });
   }
 
   addCoins(amount: number) {
@@ -82,9 +87,9 @@ class ProgressStore {
     });
   }
 
-  /** Wipes progress but keeps audio/display preferences. */
+  /** Wipes progress but keeps preferences (settings and theme). */
   reset() {
-    this.set({ ...defaultSave(), settings: this.state.settings });
+    this.set({ ...defaultSave(), settings: this.state.settings, theme: this.state.theme });
   }
 }
 

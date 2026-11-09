@@ -68,7 +68,7 @@ Each later level also makes monsters faster and shortens crystal time.
 ### Coins & skins
 
 Coins come from clearing levels (based on score and difficulty), from level
-challenges (Flawless, Monster hunter, Stargazer, Sleigh speed) and from gifts.
+challenges (Flawless, Monster hunter, Collector, Speedrun) and from gifts.
 Spend them in **Skins** on Santa, Snowman, Gingerbread, Reindeer and Ice
 Crystal. Skins are purely cosmetic and use the same hitbox and speed.
 
@@ -91,13 +91,18 @@ src/
     levels/          one file per map + registry
     scene/           Phaser scene, Player/Enemy actors, procedural textures
     createGame.ts    Phaser bootstrap
-  art/             Canvas2D drawing routines shared by Phaser and the React UI
+  themes/          visual themes (no game logic)
+    types.ts         ThemeConfig / ThemeRenderer / ThemeFx contracts
+    index.ts         theme registry + levelLook()
+    ThemeManager.ts  active theme: persistence, <html data-theme>, audio profile
+    christmas/ cyberpunk/ voxel/ pixel/   renderer, level looks, fx, music per theme
   ui/
-    components/      reusable UI (buttons, backdrop, snowfall, garland, previews…)
-    screens/         Main menu, Level select, Difficulty, Skins, Settings, Game
+    components/      reusable UI (buttons, backdrop, weather, garland, previews…)
+    backdrops/       animated menu scenery per theme
+    screens/         Main menu, Level select, Difficulty, Skins, Themes, Settings, Game
     play/            HUD, D-pad, pause / level-complete / game-over panels
     hooks/
-  styles/          SCSS partials (tokens, menu, screens, collection, play)
+  styles/          SCSS partials; themes/_<id>.scss hold per-theme CSS variables + overrides
 ```
 
 **Architecture notes**
@@ -114,25 +119,73 @@ src/
 - Saves are validated field by field. Missing or corrupted data falls back to
   defaults instead of crashing.
 
+### Visual themes
+
+Open **Themes** in the main menu to switch between four worlds. They share the
+same mechanics, levels, progress, coins and skins:
+
+| Theme         | Look                                                                 |
+| ------------- | -------------------------------------------------------------------- |
+| Christmas     | Snowy village, garlands, festive monsters, bell music                |
+| Cyberpunk     | Neon megacity, glowing walls, robots and drones, glitch FX, synth music |
+| Voxel World   | Blocky 2.5D world, block materials, cube monsters, marimba music     |
+| Pixel Classic | Crisp 8-bit arcade, pixel-perfect sprites, CRT feel, chiptune        |
+
+Switching a theme changes the maze art, player and skins, enemies, items,
+particles, animations, HUD and menus, backdrop, music and SFX timbre. The
+choice is saved in LocalStorage.
+
+How it fits together:
+
+- `ThemeConfig` (`src/themes/types.ts`) describes a theme. It holds the
+  following:
+  - level looks (names, colours)
+  - a `ThemeRenderer` (pure Canvas2D drawing of the player, enemies, items, maze
+    and particles)
+  - `ThemeFx` (in-game presentation knobs: pixel-art filtering, ambient
+    weather, glitch, item motion, burst colours, fonts)
+  - UI labels, a `SoundProfile` and the fonts to preload
+- The Phaser scene bakes all textures from the active renderer
+  (`game/scene/textures.ts`). Game logic never branches on the theme: collecting
+  a snowflake, neon orb, redstone or pixel coin is the same `snowflake` pickup.
+- Menus reuse the same renderer (`SkinCanvas`, `MazePreview`, `ThemePreview`,
+  `AttractStrip`), so previews always match the game.
+- CSS: every theme defines the same CSS variables under `[data-theme='<id>']`
+  and scopes structural overrides to `html[data-theme='<id>']`. Theme-picker
+  cards set `data-theme` themselves, so each card previews its own fonts and
+  colours.
+
+**Adding a theme**
+
+1. Add the id to `THEME_IDS` in `src/themes/types.ts`.
+2. Create `src/themes/<id>/index.ts` exporting a `ThemeConfig`, and register it
+   in `src/themes/index.ts`.
+3. Add a backdrop component in `src/ui/backdrops/` and register it in
+   `src/ui/backdrops/index.ts`.
+4. Add `src/styles/themes/_<id>.scss` with the variable block and overrides,
+   then `@use` it in `src/styles/main.scss`.
+
 ### Adding a level
 
-1. Copy `src/game/levels/christmasVillage.ts`, then change the map and theme.
+1. Copy `src/game/levels/christmasVillage.ts`, then change the map and gameplay values.
    Map legend: `#` wall, `_` void, `.` snowflake, `o` crystal, `*` star,
    ` ` corridor, `-` gate, `E` monster house, `P` player start.
 2. Append it to `LEVELS` in `src/game/levels/index.ts`.
 3. Run `pnpm test`. The map validation suite checks reachability, dead ends and
-   the house connection.
+   the house connection. Themes without a look for the new index reuse one
+   cyclically; add a `LevelLook` to each theme's `levels` for a custom name.
 
 ## Saved data
 
 LocalStorage key `winter-maze/save/v1` stores: best score (overall and per
 level), coins, unlocked and selected skins, difficulty, unlocked levels, sound
-and display settings, and lifetime stats. **Settings → Reset progress** clears
-progress but keeps settings.
+and display settings, selected theme, and lifetime stats. **Settings → Reset progress** clears
+progress but keeps settings and theme.
 
 ## Credits
 
 All code, graphics (Canvas2D/SVG) and music (WebAudio synthesis, original
 melodies) were created for this project. Fonts are open-source (SIL OFL) and
-bundled via Fontsource: Bungee, Bungee Shade, Press Start 2P and Fredoka.
+bundled via Fontsource: Bungee, Bungee Shade, Press Start 2P, Fredoka, Orbitron,
+Rajdhani, Share Tech Mono, Pixelify Sans, Silkscreen and VT323.
 Icons come from Lucide (ISC).
