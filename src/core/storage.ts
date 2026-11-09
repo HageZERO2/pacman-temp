@@ -2,6 +2,7 @@ import { DIFFICULTY_ORDER } from './difficulty';
 import { SKIN_IDS, getSkin } from './skins';
 import { LEVELS } from '../game/levels';
 import type { DifficultyId, SkinId } from '../game/types';
+import { THEME_IDS, type ThemeId } from '../themes/types';
 
 export type TouchMode = 'auto' | 'on' | 'off';
 
@@ -22,6 +23,8 @@ export interface SaveData {
   unlockedSkins: SkinId[];
   selectedSkin: SkinId;
   difficulty: DifficultyId;
+  /** Visual theme; purely cosmetic, shared progress across themes. */
+  theme: ThemeId;
   /** Highest campaign level index the player may start from. */
   unlockedLevel: number;
   settings: Settings;
@@ -39,6 +42,7 @@ export function defaultSave(): SaveData {
     unlockedSkins: ['classic'],
     selectedSkin: 'classic',
     difficulty: 'normal',
+    theme: 'christmas',
     unlockedLevel: 0,
     settings: { muted: false, master: 0.8, music: 0.5, sfx: 0.8, reducedEffects: false, touchControls: 'auto' },
     stats: { gamesPlayed: 0, snowflakes: 0, enemiesCaught: 0 },
@@ -83,6 +87,7 @@ export function sanitizeSave(raw: unknown): SaveData {
     unlockedSkins,
     selectedSkin: getSkin(selected).id,
     difficulty: DIFFICULTY_ORDER.includes(raw.difficulty as DifficultyId) ? (raw.difficulty as DifficultyId) : d.difficulty,
+    theme: THEME_IDS.includes(raw.theme as ThemeId) ? (raw.theme as ThemeId) : d.theme,
     unlockedLevel: num(raw.unlockedLevel, 0, 0, LEVELS.length - 1),
     settings: {
       muted: bool(s.muted, d.settings.muted),

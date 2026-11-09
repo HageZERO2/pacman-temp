@@ -43,6 +43,12 @@ describe('save data', () => {
     expect(fixed.unlockedLevel).toBe(2);
     expect(fixed.settings).toMatchObject({ master: 1, muted: false, touchControls: 'auto' });
   });
+
+  it('keeps a valid theme and repairs an unknown one', () => {
+    expect(sanitizeSave({ theme: 'cyberpunk' }).theme).toBe('cyberpunk');
+    expect(sanitizeSave({ theme: 'vaporwave' }).theme).toBe('christmas');
+    expect(defaultSave().theme).toBe('christmas');
+  });
 });
 
 describe('level rewards', () => {
