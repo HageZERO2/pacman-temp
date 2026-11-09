@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Play, Map, Gauge, Shirt, Settings2, Trophy } from 'lucide-react';
+import { Play, Map, Gauge, Shirt, Settings2, Trophy, Palette } from 'lucide-react';
 import { audio } from '../../core/audio';
 import { DIFFICULTIES } from '../../core/difficulty';
 import { getSkin } from '../../core/skins';
@@ -9,6 +9,7 @@ import { CoinCounter } from '../components/CoinCounter';
 import { Logo } from '../components/Logo';
 import { SkinCanvas } from '../components/SkinCanvas';
 import { useProgress } from '../hooks/useProgress';
+import { useTheme } from '../hooks/useTheme';
 import { useMediaQuery, useReducedMotion } from '../hooks/useMediaQuery';
 import type { Navigate, ScreenId } from '../navigation';
 
@@ -16,7 +17,7 @@ interface Item {
   id: ScreenId | 'play';
   label: string;
   icon: typeof Play;
-  hint: (ctx: { difficulty: string; skin: string; unlocked: number }) => string;
+  hint: (ctx: { difficulty: string; skin: string; unlocked: number; theme: string }) => string;
 }
 
 const ITEMS: Item[] = [
@@ -24,6 +25,7 @@ const ITEMS: Item[] = [
   { id: 'levels', label: 'Level Select', icon: Map, hint: ({ unlocked }) => `${unlocked} of ${LEVELS.length} unlocked` },
   { id: 'difficulty', label: 'Difficulty', icon: Gauge, hint: ({ difficulty }) => difficulty },
   { id: 'skins', label: 'Skins', icon: Shirt, hint: ({ skin }) => skin },
+  { id: 'themes', label: 'Themes', icon: Palette, hint: ({ theme }) => theme },
   { id: 'settings', label: 'Settings', icon: Settings2, hint: () => 'Sound · Display · Data' },
 ];
 
@@ -31,6 +33,7 @@ const pad = (n: number) => String(n).padStart(7, '0');
 
 export function MainMenu({ nav }: { nav: Navigate }) {
   const save = useProgress();
+  const theme = useTheme();
   const [sel, setSel] = useState(0);
   const reducedMotion = useReducedMotion();
   const narrow = useMediaQuery('(max-width: 560px)');
@@ -68,6 +71,7 @@ export function MainMenu({ nav }: { nav: Navigate }) {
     difficulty: DIFFICULTIES[save.difficulty].label,
     skin: getSkin(save.selectedSkin).name,
     unlocked: save.unlockedLevel + 1,
+    theme: theme.name,
   };
 
   return (
@@ -116,8 +120,8 @@ export function MainMenu({ nav }: { nav: Navigate }) {
           <div className="hiscore__value">{pad(save.bestScore)}</div>
           <dl className="hiscore__stats">
             <div><dt>Runs</dt><dd>{save.stats.gamesPlayed}</dd></div>
-            <div><dt>Snowflakes</dt><dd>{save.stats.snowflakes.toLocaleString('en-US')}</dd></div>
-            <div><dt>Foes frozen</dt><dd>{save.stats.enemiesCaught}</dd></div>
+            <div><dt>{theme.labels.pellets}</dt><dd>{save.stats.snowflakes.toLocaleString('en-US')}</dd></div>
+            <div><dt>{theme.labels.foes}</dt><dd>{save.stats.enemiesCaught}</dd></div>
           </dl>
         </aside>
       </div>

@@ -3,6 +3,8 @@ import type { Settings } from '../../core/storage';
 import type { LevelReward, LevelStats } from '../../core/rules';
 import type { RunSummary } from '../../game/bridge';
 import { LEVELS } from '../../game/levels';
+import { levelLook } from '../../themes';
+import { useTheme } from '../hooks/useTheme';
 import { ArcadeButton } from '../components/ArcadeButton';
 import { CoinIcon } from '../components/CoinCounter';
 import { SoundSettings } from '../screens/SettingsScreen';
@@ -17,8 +19,9 @@ export function PauseMenu({ settings, onResume, onRestart, onQuit }: {
   onRestart: () => void;
   onQuit: () => void;
 }) {
+  const theme = useTheme();
   return (
-    <OverlayPanel title="Paused" kicker="Take a cocoa break" label="Pause menu">
+    <OverlayPanel title="Paused" kicker={theme.labels.pauseKicker ?? 'Take a breather'} label="Pause menu">
       <div className="panel__buttons">
         <ArcadeButton variant="gold" size="lg" icon={<Play size={20} />} onClick={onResume} autoFocus>
           Resume
@@ -46,11 +49,12 @@ export function LevelCompletePanel({ stats, reward, newBest, onNext, onReplayCam
   onReplayCampaign: () => void;
   onQuit: () => void;
 }) {
+  const theme = useTheme();
   const last = stats.levelIndex >= LEVELS.length - 1;
   return (
     <OverlayPanel
-      title={last ? 'Christmas Saved!' : 'Level Complete'}
-      kicker={last ? 'You cleared every maze' : LEVELS[stats.levelIndex].name}
+      title={last ? (theme.labels.victoryTitle ?? 'You Win!') : 'Level Complete'}
+      kicker={last ? 'You cleared every maze' : levelLook(theme, stats.levelIndex).name}
       tone="gold"
       label="Level complete"
     >
@@ -58,8 +62,8 @@ export function LevelCompletePanel({ stats, reward, newBest, onNext, onReplayCam
       <dl className="tally">
         <div><dt>Level score</dt><dd>{fmt(stats.levelScore)}</dd></div>
         <div><dt>Total score</dt><dd>{fmt(stats.score)}</dd></div>
-        <div><dt>Snowflakes</dt><dd>{stats.snowflakes}</dd></div>
-        <div><dt>Foes frozen</dt><dd>{stats.enemiesCaught}</dd></div>
+        <div><dt>{theme.labels.pellets}</dt><dd>{stats.snowflakes}</dd></div>
+        <div><dt>{theme.labels.foes}</dt><dd>{stats.enemiesCaught}</dd></div>
         <div><dt>Stars · Gifts</dt><dd>{stats.stars}/{stats.totalStars} · {stats.gifts}</dd></div>
         <div><dt>Time</dt><dd>{fmtTime(stats.seconds)}</dd></div>
       </dl>
@@ -103,8 +107,9 @@ export function GameOverPanel({ summary, best, newBest, coinsEarned, onRetry, on
   onRetry: () => void;
   onQuit: () => void;
 }) {
+  const theme = useTheme();
   return (
-    <OverlayPanel title="Game Over" kicker="The blizzard wins this round" tone="red" label="Game over">
+    <OverlayPanel title="Game Over" kicker={theme.labels.gameOverKicker ?? 'The maze wins this round'} tone="red" label="Game over">
       {newBest && <div className="badge-new"><Trophy size={16} /> New best score</div>}
       <div className="final-score">
         <span>Final score</span>
@@ -112,9 +117,9 @@ export function GameOverPanel({ summary, best, newBest, coinsEarned, onRetry, on
       </div>
       <dl className="tally">
         <div><dt>Best</dt><dd>{fmt(best)}</dd></div>
-        <div><dt>Reached</dt><dd>{LEVELS[summary.levelIndex].name}</dd></div>
-        <div><dt>Snowflakes</dt><dd>{summary.snowflakes}</dd></div>
-        <div><dt>Foes frozen</dt><dd>{summary.enemiesCaught}</dd></div>
+        <div><dt>Reached</dt><dd>{levelLook(theme, summary.levelIndex).name}</dd></div>
+        <div><dt>{theme.labels.pellets}</dt><dd>{summary.snowflakes}</dd></div>
+        <div><dt>{theme.labels.foes}</dt><dd>{summary.enemiesCaught}</dd></div>
         <div><dt>Gifts</dt><dd>{summary.gifts}</dd></div>
         <div><dt>Coins this run</dt><dd>{coinsEarned}</dd></div>
       </dl>

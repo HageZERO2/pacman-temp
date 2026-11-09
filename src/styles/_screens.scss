@@ -36,7 +36,7 @@
       letter-spacing: 0.04em;
       text-transform: uppercase;
       color: $snow;
-      text-shadow: 0 0 24px rgba(127, 232, 255, 0.5), 0 5px 0 #0a1a45;
+      text-shadow: 0 0 24px rgba(var(--secondary-rgb), 0.5), 0 5px 0 #0a1a45;
     }
   }
 
@@ -79,7 +79,7 @@
   position: relative;
   display: grid;
   grid-template-columns: 84px auto 1fr;
-  border-radius: 18px;
+  border-radius: var(--radius-panel, 18px);
   background:
     radial-gradient(ellipse at 0% 0%, color-mix(in srgb, var(--accent), transparent 82%), transparent 60%),
     linear-gradient(135deg, color-mix(in srgb, var(--sky), #fff 6%), rgba(4, 8, 22, 0.96));
@@ -130,7 +130,7 @@
     align-items: center;
 
     .maze-preview {
-      border-radius: 10px;
+      border-radius: var(--radius-sm, 10px);
       box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.12), 0 10px 24px -10px #000;
     }
   }
@@ -143,7 +143,7 @@
     align-items: center;
     justify-content: center;
     gap: 0.5rem;
-    border-radius: 10px;
+    border-radius: var(--radius-sm, 10px);
     background: rgba(3, 6, 15, 0.72);
     backdrop-filter: blur(2px);
     color: $ice-soft;
@@ -170,7 +170,7 @@
     }
     p {
       margin: 0;
-      color: rgba(220, 236, 255, 0.78);
+      color: rgba(var(--text-dim-rgb), 0.78);
       line-height: 1.45;
       max-width: 40ch;
     }
@@ -244,7 +244,7 @@
   align-items: stretch;
   gap: 0.75rem;
   padding: 1.6rem 1.2rem 1.2rem;
-  border-radius: 20px;
+  border-radius: var(--radius-panel, 20px);
   @include bezel;
   text-align: left;
   cursor: pointer;
@@ -300,7 +300,7 @@
 
   &__tag {
     min-height: 2.6em;
-    color: rgba(220, 236, 255, 0.8);
+    color: rgba(var(--text-dim-rgb), 0.8);
     line-height: 1.35;
   }
 
@@ -324,7 +324,7 @@
     gap: 0.4rem;
     margin-top: 0.4rem;
     padding: 0.55rem;
-    border-radius: 10px;
+    border-radius: var(--radius-sm, 10px);
     background: rgba(255, 255, 255, 0.06);
     font-family: $font-display;
     font-size: 0.9rem;
@@ -340,7 +340,7 @@
   > span {
     @include pixel-label;
     font-size: 0.48rem;
-    color: rgba(201, 245, 255, 0.7);
+    color: rgba(var(--secondary-soft-rgb), 0.7);
   }
 
   &__cells {
