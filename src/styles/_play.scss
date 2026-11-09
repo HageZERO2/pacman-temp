@@ -1,0 +1,541 @@
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------- play layout
+
+.play {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+  padding: max(0.5rem, env(safe-area-inset-top)) max(0.5rem, env(safe-area-inset-right)) max(0.5rem, env(safe-area-inset-bottom))
+    max(0.5rem, env(safe-area-inset-left));
+  gap: 0.5rem;
+  user-select: none;
+  -webkit-user-select: none;
+
+  &--touch {
+    grid-template-rows: auto minmax(0, 1fr) auto;
+  }
+
+  &__stage {
+    position: relative;
+    min-height: 0;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__frame {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    height: 100%;
+  }
+
+  &__host {
+    position: absolute;
+    inset: 6px;
+    touch-action: none;
+
+    canvas {
+      border-radius: 14px;
+      box-shadow:
+        0 0 0 3px #ffd34d,
+        0 0 0 7px #c4142f,
+        0 0 0 10px #fff,
+        0 0 0 13px #0a1433,
+        0 0 50px 10px rgba(94, 200, 255, 0.25);
+    }
+  }
+
+  &__loading {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    font-family: $font-display;
+    color: $ice-soft;
+    letter-spacing: 0.1em;
+    animation: blink 1s steps(2) infinite;
+
+    &--page {
+      position: fixed;
+    }
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0.4;
+  }
+}
+
+// ---------------------------------------------------------------- HUD
+
+.hud {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  gap: 0.35rem;
+  max-width: 920px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 0.5rem 0.6rem;
+  border-radius: 16px;
+  @include bezel;
+  border-color: rgba(255, 207, 63, 0.35);
+
+  &__cell {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0.1rem 0.8rem;
+    min-width: 0;
+    border-right: 1px dashed rgba(127, 232, 255, 0.18);
+
+    &--level {
+      flex: 1;
+    }
+  }
+
+  &__label {
+    @include pixel-label;
+    font-size: 0.48rem;
+    color: rgba(201, 245, 255, 0.62);
+    white-space: nowrap;
+  }
+
+  &__value {
+    font-family: $font-pixel;
+    font-size: 0.82rem;
+    color: $snow;
+    white-space: nowrap;
+
+    &--gold {
+      color: $gold;
+      text-shadow: 0 0 8px rgba(255, 207, 63, 0.5);
+    }
+    &--name {
+      font-family: $font-display;
+      font-size: 0.95rem;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      color: $ice;
+    }
+    &--coins {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      color: $gold;
+    }
+  }
+
+  &__lives {
+    display: flex;
+    gap: 1px;
+    min-height: 24px;
+    align-items: center;
+  }
+
+  &__pause {
+    margin-left: auto;
+    align-self: center;
+  }
+
+  &__power {
+    position: absolute;
+    left: 14px;
+    right: 14px;
+    bottom: -14px;
+    height: 10px;
+    border-radius: 999px;
+    background: rgba(3, 6, 15, 0.8);
+    border: 1px solid rgba(190, 140, 255, 0.5);
+    overflow: hidden;
+    opacity: 0;
+    transition: opacity 0.2s;
+    z-index: 3;
+
+    span {
+      position: absolute;
+      left: 8px;
+      top: -1px;
+      font-family: $font-pixel;
+      font-size: 6px;
+      line-height: 10px;
+      color: #fff;
+      z-index: 1;
+      text-shadow: 0 1px 0 #000;
+    }
+    i {
+      position: absolute;
+      inset: 0;
+      transform-origin: left;
+      background: linear-gradient(90deg, #7a5cff, #d9b3ff, $ice);
+      transition: transform 0.1s linear;
+    }
+    &.is-on {
+      opacity: 1;
+    }
+  }
+
+  &__boost {
+    position: absolute;
+    right: 14px;
+    bottom: -30px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+    background: $gold;
+    color: $ink;
+    font-family: $font-display;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    z-index: 3;
+    animation: blink 0.6s steps(2) infinite;
+  }
+}
+
+@media (max-width: 700px) {
+  .hud {
+    flex-wrap: wrap;
+    row-gap: 0.4rem;
+    padding: 0.45rem;
+
+    &__cell {
+      padding: 0 0.45rem;
+      border-right: 0;
+    }
+    &__cell--level {
+      order: -1;
+      flex-basis: calc(100% - 60px);
+      flex-direction: row;
+      align-items: center;
+      gap: 0.6rem;
+    }
+    &__pause {
+      order: -1;
+    }
+    &__value {
+      font-size: 0.66rem;
+    }
+    &__label {
+      font-size: 0.42rem;
+    }
+  }
+}
+
+// ---------------------------------------------------------------- D-pad
+
+.dpad {
+  position: relative;
+  justify-self: center;
+  display: grid;
+  grid-template-columns: repeat(3, 58px);
+  grid-template-rows: repeat(3, 58px);
+  padding: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(24, 43, 99, 0.9), rgba(5, 10, 28, 0.95));
+  border: 2px solid rgba(127, 232, 255, 0.3);
+  box-shadow: 0 10px 30px -10px #000, inset 0 2px 0 rgba(255, 255, 255, 0.1);
+  touch-action: none;
+
+  &__btn {
+    display: grid;
+    place-items: center;
+    border: 0;
+    border-radius: 14px;
+    background: linear-gradient(180deg, #2a4a8f, #142a5c);
+    color: $ice-soft;
+    box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.2), 0 4px 0 #050c24;
+    touch-action: none;
+
+    &:active {
+      transform: translateY(3px);
+      background: linear-gradient(180deg, #ffe27a, $gold);
+      color: $ink;
+      box-shadow: 0 1px 0 #050c24;
+    }
+
+    &--up {
+      grid-area: 1 / 2;
+    }
+    &--left {
+      grid-area: 2 / 1;
+    }
+    &--right {
+      grid-area: 2 / 3;
+    }
+    &--down {
+      grid-area: 3 / 2;
+    }
+  }
+
+  &__hub {
+    grid-area: 2 / 2;
+    margin: 12px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, #ff8a8a, #c4142f);
+    box-shadow: 0 0 12px rgba(255, 59, 78, 0.6);
+  }
+}
+
+// Landscape phones: put the D-pad beside the maze.
+@media (orientation: landscape) and (max-height: 560px) {
+  .play--touch {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-rows: auto minmax(0, 1fr);
+
+    .hud {
+      grid-column: 1 / -1;
+    }
+    .dpad {
+      grid-column: 2;
+      grid-row: 2;
+      align-self: center;
+    }
+  }
+  .hud__power {
+    bottom: -8px;
+  }
+}
+
+@media (max-height: 700px) and (orientation: portrait) {
+  .dpad {
+    grid-template-columns: repeat(3, 48px);
+    grid-template-rows: repeat(3, 48px);
+  }
+}
+
+// ---------------------------------------------------------------- overlays
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  overflow-y: auto;
+  background: radial-gradient(ellipse at 50% 40%, rgba(7, 18, 48, 0.55), rgba(2, 4, 12, 0.85));
+  backdrop-filter: blur(4px);
+  animation: fade-in 0.25s ease both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+.panel {
+  --tone: #{$ice};
+  position: relative;
+  width: min(520px, 100%);
+  padding: 2.4rem 1.6rem 1.6rem;
+  border-radius: 22px;
+  @include bezel;
+  border: 3px solid var(--tone);
+  box-shadow:
+    0 0 0 6px rgba(3, 6, 15, 0.9),
+    0 0 60px -10px var(--tone),
+    0 30px 60px -20px #000;
+  text-align: center;
+  animation: panel-in 0.45s $ease-pop both;
+
+  &--gold {
+    --tone: #{$gold};
+  }
+  &--red {
+    --tone: #{$red};
+  }
+
+  &__icicles {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    top: -3px;
+    height: 26px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='26' viewBox='0 0 60 26'%3E%3Cpath d='M0 0h60v4c-3 0-4 2-5 9-1-7-3-9-6-9-2 0-3 3-4 18-1-15-3-18-6-18-2 0-3 2-4 8-1-6-3-8-6-8-2 0-3 4-4 14-1-10-3-14-6-14-2 0-3 2-4 6-1-4-2-6-5-6z' fill='%23e9fbff'/%3E%3C/svg%3E")
+      repeat-x;
+    filter: drop-shadow(0 3px 3px rgba(0, 30, 80, 0.5));
+    pointer-events: none;
+  }
+
+  &__kicker {
+    @include pixel-label;
+    color: rgba(220, 236, 255, 0.7);
+    margin-bottom: 0.4rem;
+  }
+
+  &__title {
+    margin: 0 0 1.1rem;
+    font-family: $font-display;
+    font-weight: 400;
+    font-size: clamp(1.9rem, 6vw, 2.7rem);
+    line-height: 1;
+    text-transform: uppercase;
+    color: var(--tone);
+    text-shadow: 0 0 24px color-mix(in srgb, var(--tone), transparent 40%), 0 5px 0 rgba(0, 0, 0, 0.7);
+  }
+
+  &__buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-top: 1.3rem;
+  }
+
+  &__section {
+    margin-top: 1.4rem;
+    padding-top: 1.1rem;
+    border-top: 1px dashed rgba(127, 232, 255, 0.25);
+    text-align: left;
+
+    h3 {
+      margin: 0 0 0.8rem;
+      @include pixel-label;
+      color: $ice;
+    }
+  }
+}
+
+@keyframes panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.92);
+  }
+}
+
+.tally {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.5rem;
+  margin: 0;
+
+  div {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.6rem;
+    padding: 0.5rem 0.7rem;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+  }
+  dt {
+    font-size: 0.8rem;
+    color: rgba(220, 236, 255, 0.7);
+    text-align: left;
+  }
+  dd {
+    margin: 0;
+    font-family: $font-pixel;
+    font-size: 0.62rem;
+    color: $snow;
+    text-align: right;
+  }
+}
+
+.challenges {
+  list-style: none;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: left;
+
+  li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 0.6rem;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    color: rgba(220, 236, 255, 0.5);
+
+    span {
+      margin-left: auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-family: $font-pixel;
+      font-size: 0.55rem;
+    }
+
+    &.is-done {
+      color: $snow;
+      background: rgba(54, 217, 127, 0.1);
+
+      svg:first-child {
+        color: $green;
+      }
+      span {
+        color: $gold;
+      }
+    }
+  }
+}
+
+.earned {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  font-family: $font-display;
+  font-size: 1.15rem;
+  color: $gold;
+  text-shadow: 0 0 16px rgba(255, 207, 63, 0.5);
+}
+
+.final-score {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+
+  span {
+    @include pixel-label;
+    color: rgba(220, 236, 255, 0.7);
+  }
+  strong {
+    font-family: $font-pixel;
+    font-weight: 400;
+    font-size: clamp(1.4rem, 5vw, 2rem);
+    color: $gold;
+    text-shadow: 0 0 14px rgba(255, 207, 63, 0.6);
+  }
+}
+
+.badge-new {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: -0.4rem 0 1rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #ff3b4e, #ffcf3f);
+  color: $ink;
+  font-family: $font-display;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  animation: badge 1s ease-in-out infinite alternate;
+}
+
+@keyframes badge {
+  to {
+    transform: scale(1.06);
+    filter: brightness(1.15);
+  }
+}
+
+@media (max-width: 480px) {
+  .tally {
+    grid-template-columns: 1fr;
+  }
+  .panel {
+    padding: 2.2rem 1rem 1.2rem;
+  }
+}

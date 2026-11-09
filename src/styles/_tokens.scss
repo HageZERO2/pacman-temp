@@ -1,0 +1,57 @@
+// Design tokens
+$night-0: #03060f;
+$night-1: #071230;
+$night-2: #0e1d47;
+$night-3: #182b63;
+$ice: #7fe8ff;
+$ice-soft: #c9f5ff;
+$gold: #ffcf3f;
+$gold-deep: #c77700;
+$red: #ff3b4e;
+$red-deep: #a10f27;
+$green: #36d97f;
+$pine: #0c4a33;
+$snow: #f4fbff;
+$ink: #1b0f05;
+
+$font-display: 'Bungee', 'Impact', sans-serif;
+$font-shade: 'Bungee Shade', 'Bungee', 'Impact', sans-serif;
+$font-pixel: 'Press Start 2P', monospace;
+$font-body: 'Fredoka Variable', 'Fredoka', system-ui, sans-serif;
+
+$ease-pop: cubic-bezier(0.2, 1.4, 0.4, 1);
+
+@mixin snowcap($height: 18px) {
+  &::before {
+    content: '';
+    position: absolute;
+    left: -4px;
+    right: -4px;
+    top: -7px;
+    height: $height;
+    border-radius: 12px 12px 0 0;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='18' viewBox='0 0 120 18'%3E%3Cpath d='M0 0h120v7c-4 0-6 1-8 2s-5 6-8 6-3-4-6-5-8 0-12 0-6 3-9 3-4-3-8-3-9 1-12 1-3 7-6 7-4-6-7-7-8 0-11 0-5 2-8 2-4-1-7-1-5 3-8 3-5-4-8-4-4 1-6 1z' fill='%23f4fbff'/%3E%3C/svg%3E")
+      repeat-x 0 0 / 120px 100%;
+    filter: drop-shadow(0 2px 2px rgba(0, 20, 60, 0.4));
+    pointer-events: none;
+    z-index: 2;
+  }
+}
+
+@mixin pixel-label {
+  font-family: $font-pixel;
+  font-size: 0.56rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@mixin bezel {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0) 40%),
+    linear-gradient(180deg, rgba(14, 29, 71, 0.92), rgba(5, 10, 28, 0.94));
+  border: 2px solid rgba(127, 232, 255, 0.25);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    inset 0 -6px 18px rgba(0, 0, 0, 0.35),
+    0 18px 40px -18px rgba(0, 0, 0, 0.8);
+}

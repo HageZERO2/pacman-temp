@@ -1,0 +1,196 @@
+@use 'tokens' as *;
+
+.backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: filter 0.6s;
+
+  &--dimmed {
+    filter: brightness(0.45) saturate(0.8);
+  }
+
+  &__sky {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 55% at 75% 0%, rgba(80, 120, 255, 0.28), transparent 60%),
+      radial-gradient(ellipse 60% 40% at 10% 20%, rgba(160, 80, 255, 0.14), transparent 70%),
+      linear-gradient(180deg, #0a1640 0%, #071230 45%, #050c24 75%, #0b1a44 100%);
+
+    &::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        radial-gradient(1.4px 1.4px at 12% 18%, #fff 50%, transparent 51%),
+        radial-gradient(1.2px 1.2px at 28% 8%, #cfe 50%, transparent 51%),
+        radial-gradient(1.6px 1.6px at 47% 22%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 63% 12%, #fff 50%, transparent 51%),
+        radial-gradient(1.4px 1.4px at 84% 30%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 92% 6%, #dff 50%, transparent 51%),
+        radial-gradient(1.2px 1.2px at 6% 42%, #fff 50%, transparent 51%),
+        radial-gradient(1px 1px at 38% 36%, #fff 50%, transparent 51%),
+        radial-gradient(1.3px 1.3px at 72% 44%, #fff 50%, transparent 51%);
+      opacity: 0.8;
+      animation: stars 5s ease-in-out infinite alternate;
+    }
+  }
+
+  &__aurora {
+    position: absolute;
+    left: -20%;
+    right: -20%;
+    top: 6%;
+    height: 38%;
+    background:
+      radial-gradient(ellipse 40% 50% at 30% 50%, rgba(54, 217, 127, 0.22), transparent 70%),
+      radial-gradient(ellipse 35% 45% at 62% 40%, rgba(127, 232, 255, 0.18), transparent 70%),
+      radial-gradient(ellipse 30% 40% at 85% 60%, rgba(190, 110, 255, 0.16), transparent 70%);
+    filter: blur(30px);
+    animation: aurora 16s ease-in-out infinite alternate;
+  }
+
+  &__moon {
+    position: absolute;
+    top: clamp(60px, 9vh, 110px);
+    right: clamp(24px, 9vw, 140px);
+    width: clamp(56px, 8vw, 100px);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 35%, #fffef2, #ffeeb8 60%, #e8c776);
+    box-shadow:
+      0 0 40px 10px rgba(255, 238, 184, 0.35),
+      0 0 120px 40px rgba(255, 238, 184, 0.12);
+
+    &::after {
+      content: '';
+      position: absolute;
+      width: 22%;
+      height: 22%;
+      left: 52%;
+      top: 48%;
+      border-radius: 50%;
+      background: rgba(200, 160, 80, 0.25);
+      box-shadow: -18px -14px 0 -2px rgba(200, 160, 80, 0.18);
+    }
+  }
+
+  &--calm &__aurora,
+  &--calm &__sky::after {
+    animation: none;
+  }
+}
+
+@keyframes stars {
+  to {
+    opacity: 0.4;
+  }
+}
+
+@keyframes aurora {
+  from {
+    transform: translateX(-4%) skewX(-6deg);
+  }
+  to {
+    transform: translateX(4%) skewX(6deg);
+  }
+}
+
+.scene {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: clamp(150px, 30vh, 300px);
+
+  &__window {
+    fill: #ffcf5a;
+    filter: drop-shadow(0 0 4px rgba(255, 190, 80, 0.9));
+    animation: window-glow 4s ease-in-out infinite;
+
+    &--late {
+      animation-delay: 1.7s;
+    }
+  }
+}
+
+@keyframes window-glow {
+  0%,
+  100% {
+    fill: #ffcf5a;
+  }
+  50% {
+    fill: #ff9f3a;
+  }
+}
+
+.snowfall {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+// ---------------------------------------------------------------- garland
+
+.garland {
+  position: absolute;
+  top: -6px;
+  left: -2%;
+  width: 104%;
+  height: clamp(44px, 7vw, 70px);
+  z-index: 3;
+
+  &__wire {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  &__bulb {
+    position: absolute;
+    width: clamp(9px, 1.2vw, 13px);
+    height: clamp(14px, 1.8vw, 19px);
+    margin-left: calc(clamp(9px, 1.2vw, 13px) / -2);
+    border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+    background: radial-gradient(circle at 35% 30%, #fff 0 12%, var(--bulb) 40%, color-mix(in srgb, var(--bulb), #000 35%) 100%);
+    box-shadow: 0 0 12px 3px color-mix(in srgb, var(--bulb), transparent 35%);
+    transform: rotate(var(--tilt));
+    transform-origin: 50% 0;
+    animation: twinkle 2.2s ease-in-out infinite;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: -4px;
+      width: 60%;
+      height: 5px;
+      transform: translateX(-50%);
+      border-radius: 2px;
+      background: #1f3326;
+    }
+  }
+}
+
+.backdrop--calm .garland__bulb {
+  animation: none;
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 1;
+    filter: brightness(1.15);
+  }
+  50% {
+    opacity: 0.45;
+    filter: brightness(0.7);
+    box-shadow: none;
+  }
+}

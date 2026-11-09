@@ -1,0 +1,206 @@
+@use 'tokens' as *;
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  height: 100%;
+}
+
+body {
+  background: $night-0;
+  color: $snow;
+  font-family: $font-body;
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior: none;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 3px solid $gold;
+  outline-offset: 3px;
+}
+
+kbd {
+  display: inline-block;
+  min-width: 1.7em;
+  padding: 0.15em 0.4em;
+  margin: 0 0.12em;
+  border-radius: 6px;
+  border: 1px solid rgba(201, 245, 255, 0.35);
+  border-bottom-width: 3px;
+  background: rgba(14, 29, 71, 0.8);
+  font-family: $font-body;
+  font-size: 0.78em;
+  font-weight: 600;
+  text-align: center;
+  color: $ice-soft;
+}
+
+.app {
+  position: relative;
+  height: 100%;
+  height: 100dvh;
+  overflow: hidden;
+}
+
+.app__stage {
+  position: relative;
+  z-index: 2;
+  height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
+  animation: screen-in 0.5s $ease-pop both;
+}
+
+@keyframes screen-in {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+// ---------------------------------------------------------------- buttons
+
+.abtn {
+  --face: #{$red};
+  --face-2: #{$red-deep};
+  --edge: #5c0614;
+  --text: #fff;
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55em;
+  padding: 0.7em 1.3em 0.62em;
+  border: 2px solid var(--edge);
+  border-radius: 14px;
+  background: linear-gradient(180deg, var(--face), var(--face-2));
+  color: var(--text);
+  font-family: $font-display;
+  font-size: 1rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow:
+    inset 0 2px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.18),
+    0 5px 0 var(--edge),
+    0 10px 18px -6px rgba(0, 0, 0, 0.6);
+  transition: transform 0.08s, box-shadow 0.08s, filter 0.15s;
+  touch-action: manipulation;
+  user-select: none;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+  &:active:not(:disabled) {
+    transform: translateY(4px);
+    box-shadow:
+      inset 0 2px 0 rgba(255, 255, 255, 0.35),
+      0 1px 0 var(--edge),
+      0 4px 10px -4px rgba(0, 0, 0, 0.6);
+  }
+  &:disabled {
+    cursor: default;
+    opacity: 0.5;
+  }
+  &[aria-disabled='true'] {
+    filter: saturate(0.5) brightness(0.85);
+  }
+
+  &--gold {
+    --face: #ffe27a;
+    --face-2: #{$gold};
+    --edge: #8a4b00;
+    --text: #{$ink};
+  }
+  &--ice {
+    --face: #b8f6ff;
+    --face-2: #3fc3f0;
+    --edge: #0a4a78;
+    --text: #04243f;
+  }
+  &--ghost {
+    --face: rgba(24, 43, 99, 0.85);
+    --face-2: rgba(7, 18, 48, 0.9);
+    --edge: rgba(127, 232, 255, 0.35);
+    --text: #{$ice-soft};
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.12),
+      0 4px 0 rgba(3, 8, 24, 0.9);
+  }
+  &--danger {
+    --face: #ff6b5b;
+    --face-2: #c41630;
+  }
+
+  &--sm {
+    font-size: 0.78rem;
+    padding: 0.55em 0.9em 0.5em;
+    border-radius: 11px;
+  }
+  &--lg {
+    font-size: 1.2rem;
+    padding: 0.8em 1.6em 0.72em;
+  }
+  &__icon {
+    display: inline-flex;
+  }
+}
+
+// ---------------------------------------------------------------- coins
+
+.coins {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.85rem 0.45rem 0.55rem;
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(40, 24, 4, 0.85), rgba(20, 10, 0, 0.85));
+  border: 2px solid rgba(255, 207, 63, 0.55);
+  box-shadow: 0 0 18px -4px rgba(255, 207, 63, 0.5);
+
+  &__value {
+    font-family: $font-pixel;
+    font-size: 0.8rem;
+    color: $gold;
+    text-shadow: 0 0 8px rgba(255, 207, 63, 0.6);
+  }
+  &__label {
+    @include pixel-label;
+    font-size: 0.5rem;
+    color: rgba(255, 230, 160, 0.7);
+  }
+}
+
+.coin-icon {
+  flex: none;
+  filter: drop-shadow(0 0 4px rgba(255, 201, 60, 0.6));
+}

@@ -1,0 +1,367 @@
+@use 'tokens' as *;
+
+// ---------------------------------------------------------------- logo
+
+.logo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  user-select: none;
+
+  &__title {
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-family: $font-shade;
+    font-weight: 400;
+    line-height: 0.88;
+    font-size: clamp(3.1rem, 11vw, 7.6rem);
+    letter-spacing: 0.02em;
+  }
+
+  &__line {
+    position: relative;
+    display: block;
+    background: linear-gradient(180deg, #ffffff 0%, #d9f8ff 40%, #6fd3ff 78%, #2f8fe0 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 22px rgba(111, 211, 255, 0.55)) drop-shadow(0 7px 0 #071a45);
+
+    // Snow resting on top of the letters.
+    &::after {
+      content: attr(data-text);
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, #fff 0 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      clip-path: polygon(0 0, 100% 0, 100% 16%, 92% 19%, 80% 15%, 66% 20%, 52% 15%, 38% 21%, 24% 15%, 10% 20%, 0 16%);
+    }
+
+    &--2 {
+      font-size: 1.12em;
+      background: linear-gradient(180deg, #fff6c8 0%, #ffd34d 40%, #ff8a2a 75%, #e8283c 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      filter: drop-shadow(0 0 24px rgba(255, 150, 60, 0.5)) drop-shadow(0 7px 0 #3d0710);
+    }
+  }
+
+  &__ribbon {
+    position: relative;
+    margin-top: clamp(0.4rem, 1.4vw, 0.9rem);
+    transform: rotate(-2deg);
+
+    span {
+      position: relative;
+      z-index: 1;
+      display: inline-block;
+      padding: 0.5em 1.8em 0.42em;
+      background: linear-gradient(180deg, #ff5a6a, #c4142f 70%, #9c0b22);
+      color: #fff6dc;
+      font-family: $font-display;
+      font-size: clamp(0.72rem, 1.9vw, 1.05rem);
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      text-shadow: 0 2px 0 #6a0616;
+      box-shadow: 0 6px 16px -6px rgba(0, 0, 0, 0.7), inset 0 2px 0 rgba(255, 255, 255, 0.3);
+      border-top: 2px dashed rgba(255, 215, 120, 0.7);
+      border-bottom: 2px dashed rgba(255, 215, 120, 0.7);
+    }
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      top: 22%;
+      width: 2.2em;
+      height: 100%;
+      background: #8a0a1f;
+      font-size: clamp(0.72rem, 1.9vw, 1.05rem);
+    }
+    &::before {
+      left: -1.4em;
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 35% 50%);
+    }
+    &::after {
+      right: -1.4em;
+      clip-path: polygon(0 0, 100% 0, 65% 50%, 100% 100%, 0 100%);
+    }
+  }
+
+  &--compact &__title {
+    font-size: clamp(2rem, 6vw, 3.4rem);
+  }
+}
+
+// ---------------------------------------------------------------- main menu
+
+.menu {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(1rem, 2.6vh, 1.8rem);
+  min-height: 100%;
+  padding: clamp(3.4rem, 9vh, 5.5rem) 1rem clamp(1.2rem, 3vh, 2rem);
+  max-width: 1040px;
+  margin: 0 auto;
+
+  &__top {
+    position: absolute;
+    top: clamp(3rem, 7vw, 4.4rem);
+    right: 1rem;
+  }
+
+  &__cabinet {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr);
+    gap: clamp(1rem, 3vw, 2.4rem);
+    width: 100%;
+    align-items: center;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
+
+  &__item {
+    position: relative;
+    display: grid;
+    grid-template-columns: 52px 26px auto 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    width: 100%;
+    padding: 0.45rem 0.8rem 0.45rem 0.2rem;
+    border: 0;
+    border-radius: 14px;
+    background: transparent;
+    color: #a9c6f0;
+    text-align: left;
+    cursor: pointer;
+    transition: color 0.15s, background 0.2s, transform 0.25s $ease-pop;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 52px;
+      right: 0;
+      bottom: 2px;
+      height: 2px;
+      background: linear-gradient(90deg, rgba(255, 207, 63, 0.9), transparent 75%);
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s $ease-pop;
+    }
+
+    &.is-active {
+      color: $gold;
+      background: linear-gradient(90deg, rgba(255, 207, 63, 0.14), rgba(255, 207, 63, 0) 70%);
+      transform: translateX(6px);
+
+      &::after {
+        transform: scaleX(1);
+      }
+      .menu__label {
+        text-shadow: 0 0 18px rgba(255, 207, 63, 0.65), 0 3px 0 #5c2b00;
+      }
+      .menu__hint {
+        opacity: 1;
+        color: #ffe9a8;
+      }
+      .menu__dots {
+        opacity: 1;
+      }
+    }
+
+    &--play .menu__label {
+      font-size: 1.3em;
+    }
+    &--play:not(.is-active) {
+      color: #ff8b97;
+    }
+  }
+
+  &__cursor {
+    display: flex;
+    justify-content: center;
+    height: 44px;
+  }
+
+  &__icon {
+    opacity: 0.85;
+  }
+
+  &__label {
+    font-family: $font-display;
+    font-size: clamp(1.15rem, 2.5vw, 1.65rem);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    text-shadow: 0 3px 0 rgba(3, 8, 24, 0.9);
+  }
+
+  &__hint {
+    justify-self: end;
+    font-size: 0.85rem;
+    font-weight: 500;
+    opacity: 0.55;
+    white-space: nowrap;
+    transition: opacity 0.2s;
+  }
+
+  &__dots {
+    display: flex;
+    gap: 6px;
+    opacity: 0;
+    transition: opacity 0.2s;
+
+    i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: $ice-soft;
+      box-shadow: 0 0 6px $ice;
+      animation: dot-eat 1.2s infinite;
+
+      &:nth-child(2) {
+        animation-delay: 0.15s;
+      }
+      &:nth-child(3) {
+        animation-delay: 0.3s;
+      }
+    }
+  }
+
+  &__help {
+    margin: 0;
+    padding: 0.35rem 1rem;
+    border-radius: 999px;
+    background: rgba(5, 10, 30, 0.72);
+    backdrop-filter: blur(4px);
+    color: rgba(201, 245, 255, 0.85);
+    font-size: 0.85rem;
+    text-align: center;
+    line-height: 2;
+  }
+}
+
+@keyframes dot-eat {
+  0%,
+  60% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  80% {
+    transform: scale(0);
+    opacity: 0;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.attract {
+  display: block;
+  opacity: 0.95;
+  border-top: 1px dashed rgba(127, 232, 255, 0.2);
+  border-bottom: 1px dashed rgba(127, 232, 255, 0.2);
+}
+
+// ---------------------------------------------------------------- hi-score marquee
+
+.hiscore {
+  position: relative;
+  padding: 1.1rem 1.2rem 1.2rem;
+  border-radius: 18px;
+  @include bezel;
+  @include snowcap;
+  border-color: rgba(255, 207, 63, 0.35);
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    @include pixel-label;
+    font-size: 0.62rem;
+    color: $gold;
+  }
+
+  &__value {
+    margin: 0.7rem 0 0.9rem;
+    padding: 0.9rem 0.6rem 0.8rem;
+    border-radius: 10px;
+    background:
+      repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.35) 0 2px, transparent 2px 4px),
+      radial-gradient(ellipse at 50% 0%, #2a0a12, #0a0306 75%);
+    border: 2px solid #2b0d14;
+    box-shadow: inset 0 0 22px rgba(0, 0, 0, 0.9);
+    font-family: $font-pixel;
+    font-size: clamp(1.15rem, 2.6vw, 1.6rem);
+    letter-spacing: 0.12em;
+    text-align: center;
+    color: #ff5a4d;
+    text-shadow:
+      0 0 6px #ff3b2e,
+      0 0 18px rgba(255, 60, 40, 0.6);
+  }
+
+  &__stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.4rem;
+    margin: 0;
+
+    div {
+      text-align: center;
+    }
+    dt {
+      @include pixel-label;
+      font-size: 0.45rem;
+      color: rgba(201, 245, 255, 0.6);
+      margin-bottom: 0.35rem;
+    }
+    dd {
+      margin: 0;
+      font-family: $font-display;
+      font-size: 1rem;
+      color: $ice-soft;
+    }
+  }
+}
+
+@media (max-width: 760px) {
+  .menu {
+    &__cabinet {
+      grid-template-columns: 1fr;
+    }
+    &__top {
+      position: static;
+      align-self: flex-end;
+      margin-bottom: -0.6rem;
+    }
+    &__item {
+      grid-template-columns: 46px 22px 1fr auto;
+    }
+    &__dots {
+      display: none;
+    }
+    &__help {
+      font-size: 0.75rem;
+    }
+  }
+}
+
+@media (max-width: 420px) {
+  .menu__hint {
+    display: none;
+  }
+}
