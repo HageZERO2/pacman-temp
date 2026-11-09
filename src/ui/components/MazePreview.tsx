@@ -1,29 +1,36 @@
-import { drawMaze } from '../../art/maze';
-import { drawCrystal, drawStar } from '../../art/items';
-import type { LevelDef } from '../../game/levels';
+import { useMemo } from 'react';
+import { LEVELS } from '../../game/levels';
 import { Maze } from '../../game/maze';
 import { useCanvas } from '../hooks/useCanvas';
-import { useMemo } from 'react';
+import { useTheme } from '../hooks/useTheme';
 
-/** Miniature render of a level, using the same art routine as the game. */
-export function MazePreview({ level, width }: { level: LevelDef; width: number }) {
-  const maze = useMemo(() => new Maze(level.map), [level]);
+/** Miniature render of a level in the active theme, using the same art routines as the game. */
+export function MazePreview({ levelIndex, width }: { levelIndex: number; width: number }) {
+  const theme = useTheme();
+  const maze = useMemo(() => new Maze(LEVELS[levelIndex].map), [levelIndex]);
   const tile = width / maze.width;
   const height = tile * maze.height;
   const ref = useCanvas(
     (ctx) => {
-      drawMaze(ctx, maze, level.theme, tile, { details: false });
-      ctx.fillStyle = 'rgba(232,251,255,0.85)';
+      const r = theme.renderer;
+      r.drawMaze(ctx, maze, levelIndex, tile, { details: false });
       for (const p of maze.pickups) {
         const x = (p.x + 0.5) * tile;
         const y = (p.y + 0.5) * tile;
-        if (p.kind === 'snowflake') ctx.fillRect(x - 1, y - 1, 2, 2);
-        else if (p.kind === 'crystal') drawCrystal(ctx, x, y, tile * 0.38);
-        else drawStar(ctx, x, y, tile * 0.42);
+        r.drawItem(ctx, p.kind, x, y, p.kind === 'snowflake' ? tile : tile * 1.4);
       }
     },
     width,
     height,
+    false,
+    theme.id,
   );
-  return <canvas ref={ref} style={{ width, height }} className="maze-preview" aria-hidden="true" />;
+  return (
+    <canvas
+      ref={ref}
+      style={{ width, height, imageRendering: theme.fx.pixelArt ? 'pixelated' : undefined }}
+      className="maze-preview"
+      aria-hidden="true"
+    />
+  );
 }
