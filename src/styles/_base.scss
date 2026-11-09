@@ -39,9 +39,9 @@ kbd {
   padding: 0.15em 0.4em;
   margin: 0 0.12em;
   border-radius: 6px;
-  border: 1px solid rgba(201, 245, 255, 0.35);
+  border: 1px solid rgba(var(--secondary-soft-rgb), 0.35);
   border-bottom-width: 3px;
-  background: rgba(14, 29, 71, 0.8);
+  background: var(--panel-1);
   font-family: $font-body;
   font-size: 0.78em;
   font-weight: 600;
@@ -91,7 +91,7 @@ kbd {
 .abtn {
   --face: #{$red};
   --face-2: #{$red-deep};
-  --edge: #5c0614;
+  --edge: var(--btn-red-edge);
   --text: #fff;
   position: relative;
   display: inline-flex;
@@ -100,7 +100,8 @@ kbd {
   gap: 0.55em;
   padding: 0.7em 1.3em 0.62em;
   border: 2px solid var(--edge);
-  border-radius: 14px;
+  border-radius: var(--radius-btn, 14px);
+  clip-path: var(--btn-clip, none);
   background: linear-gradient(180deg, var(--face), var(--face-2));
   color: var(--text);
   font-family: $font-display;
@@ -136,21 +137,21 @@ kbd {
   }
 
   &--gold {
-    --face: #ffe27a;
+    --face: var(--btn-gold-1);
     --face-2: #{$gold};
-    --edge: #8a4b00;
+    --edge: var(--btn-gold-edge);
     --text: #{$ink};
   }
   &--ice {
-    --face: #b8f6ff;
-    --face-2: #3fc3f0;
-    --edge: #0a4a78;
-    --text: #04243f;
+    --face: var(--btn-ice-1);
+    --face-2: var(--btn-ice-2);
+    --edge: var(--btn-ice-edge);
+    --text: var(--btn-ice-text);
   }
   &--ghost {
-    --face: rgba(24, 43, 99, 0.85);
-    --face-2: rgba(7, 18, 48, 0.9);
-    --edge: rgba(127, 232, 255, 0.35);
+    --face: var(--btn-ghost-1);
+    --face-2: var(--btn-ghost-2);
+    --edge: rgba(var(--secondary-rgb), 0.35);
     --text: #{$ice-soft};
     box-shadow:
       inset 0 1px 0 rgba(255, 255, 255, 0.12),
@@ -164,7 +165,7 @@ kbd {
   &--sm {
     font-size: 0.78rem;
     padding: 0.55em 0.9em 0.5em;
-    border-radius: 11px;
+    border-radius: var(--radius-sm, 11px);
   }
   &--lg {
     font-size: 1.2rem;
@@ -184,14 +185,14 @@ kbd {
   padding: 0.45rem 0.85rem 0.45rem 0.55rem;
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(40, 24, 4, 0.85), rgba(20, 10, 0, 0.85));
-  border: 2px solid rgba(255, 207, 63, 0.55);
-  box-shadow: 0 0 18px -4px rgba(255, 207, 63, 0.5);
+  border: 2px solid rgba(var(--primary-rgb), 0.55);
+  box-shadow: 0 0 18px -4px rgba(var(--primary-rgb), 0.5);
 
   &__value {
     font-family: $font-pixel;
     font-size: 0.8rem;
     color: $gold;
-    text-shadow: 0 0 8px rgba(255, 207, 63, 0.6);
+    text-shadow: 0 0 8px rgba(var(--primary-rgb), 0.6);
   }
   &__label {
     @include pixel-label;
