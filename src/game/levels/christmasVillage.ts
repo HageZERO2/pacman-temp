@@ -8,15 +8,6 @@ export const christmasVillage: LevelDef = {
   playerSpeed: 7.2,
   enemySpeedScale: 1,
   frightenedScale: 1,
-  theme: {
-    sky: ['#0b1a3a', '#050b1e'],
-    wall: '#1f6b4a',
-    wallDark: '#0f3d2a',
-    wallEdge: '#7be0a8',
-    style: 'hedge',
-    accent: '#ff5a5f',
-    lights: ['#ff4d5e', '#ffd34d', '#4dd2ff', '#7cff7c'],
-  },
   map: [
     '###################',
     '#........#........#',

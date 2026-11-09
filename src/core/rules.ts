@@ -38,9 +38,9 @@ export interface Challenge {
 export function levelChallenges(stats: LevelStats): Challenge[] {
   return [
     { id: 'flawless', label: 'Flawless — no lives lost', coins: 25, done: stats.livesLost === 0 },
-    { id: 'hunter', label: 'Monster hunter — catch 4 frozen foes', coins: 20, done: stats.enemiesCaught >= 4 },
-    { id: 'stars', label: 'Stargazer — grab every golden star', coins: 15, done: stats.stars >= stats.totalStars },
-    { id: 'speed', label: 'Sleigh speed — clear in under 2:30', coins: 15, done: stats.seconds < 150 },
+    { id: 'hunter', label: 'Monster hunter — catch 4 vulnerable foes', coins: 20, done: stats.enemiesCaught >= 4 },
+    { id: 'stars', label: 'Collector — grab every rare bonus', coins: 15, done: stats.stars >= stats.totalStars },
+    { id: 'speed', label: 'Speedrun — clear in under 2:30', coins: 15, done: stats.seconds < 150 },
   ];
 }
 

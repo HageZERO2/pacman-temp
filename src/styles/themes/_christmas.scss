@@ -1,0 +1,46 @@
+// Christmas is also the fallback, so its variables live on :root as well.
+:root,
+[data-theme='christmas'] {
+  --font-logo: 'Bungee Shade', 'Bungee', 'Impact', sans-serif;
+  --font-display: 'Bungee', 'Impact', sans-serif;
+  --font-hud: 'Press Start 2P', monospace;
+  --font-body: 'Fredoka Variable', 'Fredoka', system-ui, sans-serif;
+
+  --c-bg: #03060f;
+  --c-text: #f4fbff;
+  --c-ink: #1b0f05;
+  --c-primary: #ffcf3f;
+  --c-primary-deep: #c77700;
+  --c-secondary: #7fe8ff;
+  --c-secondary-soft: #c9f5ff;
+  --c-danger: #ff3b4e;
+  --c-danger-deep: #a10f27;
+  --c-success: #36d97f;
+
+  --primary-rgb: 255, 207, 63;
+  --secondary-rgb: 127, 232, 255;
+  --secondary-soft-rgb: 201, 245, 255;
+  --text-dim-rgb: 220, 236, 255;
+  --danger-rgb: 255, 59, 78;
+
+  --panel-1: rgba(14, 29, 71, 0.92);
+  --panel-2: rgba(5, 10, 28, 0.94);
+
+  --btn-red-edge: #5c0614;
+  --btn-gold-1: #ffe27a;
+  --btn-gold-edge: #8a4b00;
+  --btn-ice-1: #b8f6ff;
+  --btn-ice-2: #3fc3f0;
+  --btn-ice-edge: #0a4a78;
+  --btn-ice-text: #04243f;
+  --btn-ghost-1: rgba(24, 43, 99, 0.85);
+  --btn-ghost-2: rgba(7, 18, 48, 0.9);
+
+  --radius-panel: 18px;
+  --radius-sm: 12px;
+  --radius-btn: 14px;
+  --btn-clip: none;
+
+  /** Theme-switch wipe colour. */
+  --wipe: radial-gradient(circle at 50% 40%, #ffffff, #7fe8ff 30%, #0b1a3a 70%);
+}
