@@ -8,15 +8,6 @@ export const santasWorkshop: LevelDef = {
   playerSpeed: 7.8,
   enemySpeedScale: 1.12,
   frightenedScale: 0.7,
-  theme: {
-    sky: ['#2a0d1e', '#0a0612'],
-    wall: '#a8323a',
-    wallDark: '#5c1420',
-    wallEdge: '#ffd27a',
-    style: 'wood',
-    accent: '#ffc94d',
-    lights: ['#ffc94d', '#ff4d5e', '#7cff9a', '#ffffff'],
-  },
   map: [
     '###################',
     '#o.......#.......o#',
