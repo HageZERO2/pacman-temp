@@ -3,7 +3,7 @@ import { ENEMY_PROFILES, greedyDirection, pathDirection, randomDirection } from 
 import type { Maze } from '../maze';
 import { advance, positionOf, reverse, type Mover } from '../movement';
 import type { Cell, EnemyKind, EnemyMode, MaybeDir } from '../types';
-import { EYE_DIRS } from '../../art/enemies';
+import { EYE_FRAME_DIRS as EYE_DIRS } from '../../themes/types';
 import { TILE, enemyKey } from './textures';
 
 export interface EnemyBrain {

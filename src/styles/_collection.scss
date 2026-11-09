@@ -62,7 +62,7 @@
   p {
     margin: 0.2rem 0 1rem;
     max-width: 36ch;
-    color: rgba(220, 236, 255, 0.82);
+    color: rgba(var(--text-dim-rgb), 0.82);
     line-height: 1.45;
   }
 
@@ -247,7 +247,7 @@ li:nth-child(2) .ornament::before {
   flex-direction: column;
   gap: 1rem;
   padding: 1.6rem 1.4rem 1.4rem;
-  border-radius: 18px;
+  border-radius: var(--radius-panel, 18px);
   @include bezel;
   @include snowcap;
 
@@ -265,13 +265,13 @@ li:nth-child(2) .ornament::before {
 
   p {
     margin: 0;
-    color: rgba(220, 236, 255, 0.75);
+    color: rgba(var(--text-dim-rgb), 0.75);
     line-height: 1.45;
   }
 
   &--danger {
     grid-column: 1 / -1;
-    border-color: rgba(255, 59, 78, 0.3);
+    border-color: rgba(var(--danger-rgb), 0.3);
 
     h2 {
       color: #ff8b97;
@@ -293,7 +293,7 @@ li:nth-child(2) .ornament::before {
   gap: 0.6rem;
   margin: 0.4rem 0 0;
   padding-top: 0.9rem;
-  border-top: 1px dashed rgba(127, 232, 255, 0.2);
+  border-top: 1px dashed rgba(var(--secondary-rgb), 0.2);
 
   div {
     display: flex;
@@ -308,7 +308,7 @@ li:nth-child(2) .ornament::before {
   dd {
     margin: 0;
     font-size: 0.85rem;
-    color: rgba(220, 236, 255, 0.65);
+    color: rgba(var(--text-dim-rgb), 0.65);
     text-align: right;
   }
 }
@@ -351,7 +351,7 @@ li:nth-child(2) .ornament::before {
     height: 12px;
     border-radius: 999px;
     background:
-      linear-gradient(90deg, #3fc3f0, $ice-soft) 0 0 / var(--fill) 100% no-repeat,
+      linear-gradient(90deg, var(--btn-ice-2), $ice-soft) 0 0 / var(--fill) 100% no-repeat,
       rgba(255, 255, 255, 0.08);
     box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6);
     cursor: pointer;
@@ -363,7 +363,7 @@ li:nth-child(2) .ornament::before {
       border-radius: 50%;
       background: radial-gradient(circle at 35% 30%, #fff6c8, $gold 60%, $gold-deep);
       border: 2px solid #6a3a00;
-      box-shadow: 0 0 10px rgba(255, 207, 63, 0.7);
+      box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.7);
     }
     &::-moz-range-thumb {
       width: 22px;
@@ -396,7 +396,7 @@ li:nth-child(2) .ornament::before {
 
     small {
       font-weight: 400;
-      color: rgba(220, 236, 255, 0.6);
+      color: rgba(var(--text-dim-rgb), 0.6);
     }
   }
 
@@ -456,7 +456,7 @@ li:nth-child(2) .ornament::before {
   &__options {
     display: inline-flex;
     padding: 4px;
-    border-radius: 12px;
+    border-radius: var(--radius-sm, 12px);
     background: rgba(0, 0, 0, 0.35);
     box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
 
@@ -465,16 +465,16 @@ li:nth-child(2) .ornament::before {
       padding: 0.45rem 0.85rem;
       border-radius: 9px;
       background: transparent;
-      color: rgba(201, 245, 255, 0.7);
+      color: rgba(var(--secondary-soft-rgb), 0.7);
       font-family: $font-display;
       font-size: 0.75rem;
       text-transform: uppercase;
       cursor: pointer;
 
       &.is-on {
-        background: linear-gradient(180deg, #b8f6ff, #3fc3f0);
-        color: #04243f;
-        box-shadow: 0 2px 0 #0a4a78;
+        background: linear-gradient(180deg, var(--btn-ice-1), var(--btn-ice-2));
+        color: var(--btn-ice-text);
+        box-shadow: 0 2px 0 var(--btn-ice-edge);
       }
     }
   }
