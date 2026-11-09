@@ -2,7 +2,8 @@ import Phaser from 'phaser';
 import { audio } from '../../core/audio';
 import type { DifficultyConfig } from '../../core/difficulty';
 import { GIFT_COINS, GIFT_LIFETIME, GIFT_TRIGGERS, POINTS, type LevelStats } from '../../core/rules';
-import { drawMaze } from '../../art/maze';
+import { levelLook } from '../../themes';
+import type { BurstEvent, LevelLook, ThemeConfig } from '../../themes/types';
 import { ENEMY_ORDER } from '../ai';
 import type { GameBridge, GamePhase, HudState } from '../bridge';
 import { LEVELS, type LevelDef } from '../levels';
@@ -11,11 +12,12 @@ import { occupiedCell, positionOf } from '../movement';
 import type { MaybeDir, SkinId } from '../types';
 import { Enemy } from './Enemy';
 import { Player } from './Player';
-import { TILE, buildTextures } from './textures';
+import { TILE, buildTextures, itemKey } from './textures';
 
 export interface SessionConfig {
   difficulty: DifficultyConfig;
   skin: SkinId;
+  theme: ThemeConfig;
   reducedEffects: boolean;
 }
 
@@ -39,17 +41,17 @@ const KEY_DIRS: Record<string, MaybeDir> = {
   ArrowRight: 'right', KeyD: 'right',
 };
 
-const UI_FONT = '"Press Start 2P", monospace';
-const TITLE_FONT = 'Bungee, Impact, sans-serif';
-
 export class GameScene extends Phaser.Scene {
   private data0!: SceneData;
   private level!: LevelDef;
+  private theme!: ThemeConfig;
+  private look!: LevelLook;
   private maze!: Maze;
   private diff!: DifficultyConfig;
   private player!: Player;
   private enemies: Enemy[] = [];
   private pickups = new Map<number, PickupSprite>();
+  private blinkers: Phaser.GameObjects.Image[] = [];
   private mazeImage!: Phaser.GameObjects.Image;
   private sparks!: Phaser.GameObjects.Particles.ParticleEmitter;
   private banner?: Phaser.GameObjects.Container;
@@ -85,6 +87,8 @@ export class GameScene extends Phaser.Scene {
   init(data: SceneData) {
     this.data0 = data;
     this.level = LEVELS[data.levelIndex];
+    this.theme = data.session.theme;
+    this.look = levelLook(this.theme, data.levelIndex);
     this.diff = data.session.difficulty;
     this.maze = new Maze(this.level.map);
     this.score = data.score;
@@ -93,6 +97,7 @@ export class GameScene extends Phaser.Scene {
     this.levelStartLives = data.lives;
     this.enemies = [];
     this.pickups = new Map();
+    this.blinkers = [];
     this.banner = undefined;
     this.gift = undefined;
     this.giftsSpawned = 0;
@@ -105,14 +110,14 @@ export class GameScene extends Phaser.Scene {
     const w = this.maze.width * TILE;
     const h = this.maze.height * TILE;
     if (this.scale.width !== w || this.scale.height !== h) this.scale.setGameSize(w, h);
-    this.cameras.main.setBackgroundColor(this.level.theme.sky[1]);
+    this.cameras.main.setBackgroundColor(this.look.background[1]);
 
-    buildTextures(this, session.skin);
+    buildTextures(this, this.theme, session.skin);
     this.createMazeImage();
     this.createDecorations();
     this.createPickups();
 
-    this.player = new Player(this, this.maze, session.skin);
+    this.player = new Player(this, this.maze, { rotate: this.theme.fx.rotatePlayer, glow: this.theme.fx.playerGlow }, !session.reducedEffects);
     const homes = this.maze.enemyHomes;
     const homeFor = [this.maze.exit, this.maze.houseCenter, homes[0], homes[homes.length - 1]];
     this.enemies = ENEMY_ORDER.map((kind, i) => new Enemy(this, this.maze, kind, homeFor[i] ?? this.maze.houseCenter, i === 0));
@@ -123,7 +128,7 @@ export class GameScene extends Phaser.Scene {
       scale: { start: 0.7, end: 0 },
       alpha: { start: 1, end: 0 },
       rotate: { min: 0, max: 180 },
-      blendMode: Phaser.BlendModes.ADD,
+      blendMode: this.theme.fx.pixelArt ? Phaser.BlendModes.NORMAL : Phaser.BlendModes.ADD,
       emitting: false,
     }).setDepth(7);
 
@@ -166,7 +171,7 @@ export class GameScene extends Phaser.Scene {
     if (!this.textures.exists(key)) {
       const tex = this.textures.createCanvas(key, this.maze.width * TILE, this.maze.height * TILE);
       if (tex) {
-        drawMaze(tex.getContext(), this.maze, this.level.theme, TILE);
+        this.theme.renderer.drawMaze(tex.getContext(), this.maze, this.data0.levelIndex, TILE);
         tex.refresh();
       }
     }
@@ -174,9 +179,57 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createDecorations() {
-    const { theme } = this.level;
+    const { fx } = this.theme;
     const reduced = this.data0.session.reducedEffects;
+    if (fx.bulbs) this.createBulbs(this.look.lights ?? ['#ffffff'], reduced);
+    if (!reduced) this.createAmbient();
+    if (fx.glitch && !reduced) this.scheduleGlitch();
+  }
+
+  private createAmbient() {
     const w = this.maze.width * TILE;
+    const h = this.maze.height * TILE;
+    const base = { x: { min: 0, max: w }, y: -10 };
+    switch (this.theme.fx.ambient) {
+      case 'snow':
+        this.add.particles(0, 0, 'ambient', {
+          ...base, lifespan: 14000, speedY: { min: 18, max: 48 }, speedX: { min: -14, max: 14 },
+          scale: { min: 0.25, max: 0.75 }, alpha: { min: 0.25, max: 0.7 }, frequency: 160, advance: 8000,
+        }).setDepth(9);
+        break;
+      case 'rain':
+        this.add.particles(0, 0, 'ambient', {
+          ...base, lifespan: 2600, speedY: { min: 420, max: 620 }, speedX: { min: -30, max: -10 },
+          scale: { min: 0.6, max: 1.2 }, alpha: { min: 0.15, max: 0.4 }, frequency: 45, advance: 3000,
+          blendMode: Phaser.BlendModes.ADD,
+        }).setDepth(9);
+        break;
+      case 'blocks':
+        // Slow drifting cubes (dust/embers); integer scales keep pixel edges crisp.
+        this.add.particles(0, 0, 'ambient', {
+          x: { min: 0, max: w }, y: h + 10, lifespan: 16000, speedY: { min: -26, max: -12 }, speedX: { min: -8, max: 8 },
+          scale: { min: 0.5, max: 1 }, alpha: { start: 0.8, end: 0 }, frequency: 420, advance: 9000,
+        }).setDepth(9);
+        break;
+      case 'none':
+        break;
+    }
+  }
+
+  /** Brief digital glitch: the maze jumps sideways and flickers a neon tint. */
+  private scheduleGlitch() {
+    this.time.delayedCall(Phaser.Math.Between(3500, 8000), () => {
+      if (this.phase === 'playing' || this.phase === 'ready') {
+        const tints = [0xff2bd6, 0x2bf3ff];
+        this.mazeImage.setTint(Phaser.Utils.Array.GetRandom(tints)).setX(Phaser.Math.Between(-4, 4));
+        this.time.delayedCall(70, () => this.mazeImage.setX(Phaser.Math.Between(-2, 2)));
+        this.time.delayedCall(140, () => this.mazeImage.clearTint().setX(0));
+      }
+      this.scheduleGlitch();
+    });
+  }
+
+  private createBulbs(lights: string[], reduced: boolean) {
     const wire = this.add.graphics().setDepth(1);
     wire.lineStyle(2, 0x0d1a12, 0.9);
     for (const row of [0, this.maze.height - 1]) {
@@ -197,7 +250,7 @@ export class GameScene extends Phaser.Scene {
       }
       wire.strokePath();
       bulbs.forEach(([bx, by], i) => {
-        const color = Phaser.Display.Color.HexStringToColor(theme.lights[i % theme.lights.length]).color;
+        const color = Phaser.Display.Color.HexStringToColor(lights[i % lights.length]).color;
         const glow = this.add.image(bx, by + 2, 'glow').setTint(color).setScale(0.45).setAlpha(0.55).setDepth(1).setBlendMode(Phaser.BlendModes.ADD);
         const bulb = this.add.image(bx, by, 'bulb').setTint(color).setDepth(1.1);
         if (!reduced) {
@@ -213,39 +266,44 @@ export class GameScene extends Phaser.Scene {
         }
       });
     }
-    if (!reduced) {
-      this.add.particles(0, 0, 'flake', {
-        x: { min: 0, max: w },
-        y: -10,
-        lifespan: 14000,
-        speedY: { min: 18, max: 48 },
-        speedX: { min: -14, max: 14 },
-        scale: { min: 0.25, max: 0.75 },
-        alpha: { min: 0.25, max: 0.7 },
-        frequency: 160,
-        advance: 8000,
-      }).setDepth(9);
-    }
   }
 
   private createPickups() {
     this.requiredLeft = 0;
     this.totalStars = 0;
     const reduced = this.data0.session.reducedEffects;
+    const motion = this.theme.fx.itemMotion;
     for (const p of this.maze.pickups) {
       const x = (p.x + 0.5) * TILE;
       const y = (p.y + 0.5) * TILE;
-      const sprite = this.add.image(x, y, p.kind).setDepth(2);
-      if (p.kind === 'star') {
-        this.totalStars++;
-        if (!reduced) this.tweens.add({ targets: sprite, scale: { from: 0.85, to: 1.12 }, angle: { from: -8, to: 8 }, duration: 700, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-      } else {
-        this.requiredLeft++;
-        if (p.kind === 'crystal' && !reduced) {
-          this.tweens.add({ targets: sprite, scale: { from: 0.8, to: 1.15 }, duration: 520, yoyo: true, repeat: -1, ease: 'Sine.easeInOut' });
-        }
-      }
+      const sprite = this.add.image(x, y, itemKey(p.kind)).setDepth(2);
+      if (p.kind === 'star') this.totalStars++;
+      else this.requiredLeft++;
+      if (!reduced && p.kind !== 'snowflake') this.animateItem(sprite, p.kind === 'star', motion);
       this.pickups.set(p.y * this.maze.width + p.x, { kind: p.kind, sprite });
+    }
+    if (this.blinkers.length) {
+      this.time.addEvent({ delay: 260, loop: true, callback: () => this.blinkers.forEach((s) => s.active && s.setVisible(!s.visible)) });
+    }
+  }
+
+  private animateItem(sprite: Phaser.GameObjects.Image, star: boolean, motion: ThemeConfig['fx']['itemMotion']) {
+    const loop = { yoyo: true, repeat: -1, ease: 'Sine.easeInOut' };
+    switch (motion) {
+      case 'festive':
+        if (star) this.tweens.add({ targets: sprite, scale: { from: 0.85, to: 1.12 }, angle: { from: -8, to: 8 }, duration: 700, ...loop });
+        else this.tweens.add({ targets: sprite, scale: { from: 0.8, to: 1.15 }, duration: 520, ...loop });
+        break;
+      case 'pulse':
+        this.tweens.add({ targets: sprite, scale: { from: 0.82, to: 1.14 }, alpha: { from: 1, to: 0.75 }, duration: star ? 640 : 480, ...loop });
+        break;
+      case 'bob':
+        this.tweens.add({ targets: sprite, y: sprite.y - 4, duration: star ? 900 : 700, ...loop });
+        break;
+      case 'blink':
+        // Hard on/off like an arcade cabinet; no scaling so pixels stay crisp.
+        this.blinkers.push(sprite);
+        break;
     }
   }
 
@@ -301,16 +359,17 @@ export class GameScene extends Phaser.Scene {
     const cx = this.maze.width * TILE * 0.5;
     const cy = (this.maze.playerStart.y - 0.5) * TILE;
     const items: Phaser.GameObjects.GameObject[] = [];
+    const tx = this.theme.fx.text;
     if (levelStart) {
       items.push(
-        this.add.text(0, -TILE * 3.6, this.level.name.toUpperCase(), {
-          fontFamily: TITLE_FONT, fontSize: '30px', color: '#ffffff', stroke: '#0a1530', strokeThickness: 8,
+        this.add.text(0, -TILE * 3.6, this.look.name.toUpperCase(), {
+          fontFamily: tx.font, fontSize: `${tx.titleSize}px`, color: tx.titleColor, stroke: tx.titleStroke, strokeThickness: 8,
         }).setOrigin(0.5),
       );
       audio.play('start');
     }
     const ready = this.add.text(0, 0, 'READY!', {
-      fontFamily: TITLE_FONT, fontSize: '34px', color: '#ffd34d', stroke: '#5a1a00', strokeThickness: 8,
+      fontFamily: tx.font, fontSize: `${Math.round(tx.titleSize * 1.13)}px`, color: tx.readyColor, stroke: tx.readyStroke, strokeThickness: 8,
     }).setOrigin(0.5);
     items.push(ready);
     this.banner = this.add.container(cx, cy, items).setDepth(10);
@@ -383,7 +442,7 @@ export class GameScene extends Phaser.Scene {
   }
 
   private rotateSnowflakes(dt: number) {
-    if (this.data0.session.reducedEffects) return;
+    if (this.data0.session.reducedEffects || this.theme.fx.itemMotion !== 'festive') return;
     const delta = dt * 0.8;
     this.pickups.forEach((p) => {
       if (p.kind === 'snowflake') p.sprite.rotation += delta;
@@ -449,14 +508,14 @@ export class GameScene extends Phaser.Scene {
           this.stats.crystals++;
           this.requiredLeft--;
           this.activatePower();
-          this.burst(x, y, 18, [0xd9b3ff, 0x7fe8ff, 0xffffff]);
+          this.burst(x, y, 18, 'power');
           break;
         case 'star':
           this.score += POINTS.star;
           this.stats.stars++;
           audio.play('star');
-          this.burst(x, y, 22, [0xffd34d, 0xffffff, 0xffa31a]);
-          this.floatText(x, y, `+${POINTS.star}`, '#ffd34d');
+          this.burst(x, y, 22, 'star');
+          this.floatText(x, y, `+${POINTS.star}`, this.theme.fx.text.float.star);
           break;
       }
       if (this.requiredLeft <= 0) {
@@ -474,7 +533,7 @@ export class GameScene extends Phaser.Scene {
     this.enemies.forEach((e) => e.frighten());
     audio.play('crystal');
     audio.setDucked(true);
-    this.cameras.main.flash(180, 120, 200, 255);
+    this.cameras.main.flash(180, ...this.theme.fx.flash);
   }
 
   private maybeSpawnGift() {
@@ -484,7 +543,7 @@ export class GameScene extends Phaser.Scene {
     this.removeGift();
     const x = (this.maze.playerStart.x + 0.5) * TILE;
     const y = (this.maze.playerStart.y + 0.5) * TILE;
-    this.gift = this.add.image(x, y, 'gift').setDepth(3).setScale(0);
+    this.gift = this.add.image(x, y, itemKey('gift')).setDepth(3).setScale(0);
     this.tweens.add({ targets: this.gift, scale: 1, duration: 400, ease: 'Back.easeOut' });
     this.giftLeft = GIFT_LIFETIME;
   }
@@ -506,7 +565,7 @@ export class GameScene extends Phaser.Scene {
       audio.play('extraLife');
     } else if (roll < 0.5) {
       this.boostLeft = 6;
-      label = 'SLEIGH BOOST!';
+      label = `${this.theme.labels.boost.toUpperCase()}!`;
       audio.play('gift');
     } else if (roll < 0.7) {
       this.score += 1000;
@@ -518,8 +577,8 @@ export class GameScene extends Phaser.Scene {
       audio.play('buy');
     }
     this.data0.bridge.events.emit('coins', GIFT_COINS);
-    this.floatText(x, y - TILE * 0.4, label, '#ff8fa3');
-    this.burst(x, y, 24, [0xff4d5e, 0xffd34d, 0x7cff9a, 0xffffff]);
+    this.floatText(x, y - TILE * 0.4, label, this.theme.fx.text.float.gift);
+    this.burst(x, y, 24, 'gift');
     this.pushHud(true);
   }
 
@@ -548,8 +607,8 @@ export class GameScene extends Phaser.Scene {
     e.eat();
     const x = (e.position.x + 0.5) * TILE;
     const y = (e.position.y + 0.5) * TILE;
-    this.burst(x, y, 20, [0xbdf3ff, 0xffffff, 0x7cc7ff]);
-    this.floatText(x, y, `${points}`, '#7fe8ff');
+    this.burst(x, y, 20, 'enemy');
+    this.floatText(x, y, `${points}`, this.theme.fx.text.float.enemy);
     audio.play('eatEnemy');
     this.hitstop = 0.35;
     e.render(false);
@@ -557,6 +616,7 @@ export class GameScene extends Phaser.Scene {
 
   private die() {
     this.setPhase('dying');
+    this.player.hideAura();
     audio.setDucked(false);
     audio.play('death');
     this.cameras.main.shake(260, 0.01);
@@ -571,7 +631,7 @@ export class GameScene extends Phaser.Scene {
       duration: 1100,
       delay: 350,
       ease: 'Cubic.easeIn',
-      onStart: () => this.burst(s.x, s.y, 30, [0xffffff, 0xbdf3ff, 0xff4d5e]),
+      onStart: () => this.burst(s.x, s.y, 30, 'death'),
     });
     this.time.delayedCall(1800, () => {
       this.lives--;
@@ -597,11 +657,11 @@ export class GameScene extends Phaser.Scene {
     this.time.addEvent({
       delay: 180,
       repeat: 7,
-      callback: () => (this.mazeImage.isTinted ? this.mazeImage.clearTint() : this.mazeImage.setTint(0xb8d8ff)),
+      callback: () => (this.mazeImage.isTinted ? this.mazeImage.clearTint() : this.mazeImage.setTint(this.theme.fx.winTint)),
     });
     const w = this.maze.width * TILE;
     for (let i = 0; i < 6; i++) {
-      this.time.delayedCall(i * 220, () => this.burst(Phaser.Math.Between(TILE * 2, w - TILE * 2), Phaser.Math.Between(TILE * 2, TILE * 8), 26, [0xff4d5e, 0xffd34d, 0x7cff9a, 0x7fe8ff]));
+      this.time.delayedCall(i * 220, () => this.burst(Phaser.Math.Between(TILE * 2, w - TILE * 2), Phaser.Math.Between(TILE * 2, TILE * 8), 26, 'win'));
     }
     this.time.delayedCall(1700, () => {
       this.mazeImage.clearTint();
@@ -631,7 +691,8 @@ export class GameScene extends Phaser.Scene {
 
   // ---------------------------------------------------------------- fx & hud
 
-  private burst(x: number, y: number, count: number, tints: number[]) {
+  private burst(x: number, y: number, count: number, event: BurstEvent) {
+    const tints = this.theme.fx.bursts[event];
     const n = this.data0.session.reducedEffects ? Math.ceil(count / 3) : count;
     this.sparks.setParticleTint(Phaser.Utils.Array.GetRandom(tints));
     this.sparks.explode(n, x, y);
@@ -639,7 +700,7 @@ export class GameScene extends Phaser.Scene {
 
   private floatText(x: number, y: number, text: string, color: string) {
     const t = this.add.text(x, y, text, {
-      fontFamily: UI_FONT, fontSize: '14px', color, stroke: '#0a0f24', strokeThickness: 5,
+      fontFamily: this.theme.fx.text.floatFont, fontSize: '14px', color, stroke: this.theme.fx.text.floatStroke, strokeThickness: 5,
     }).setOrigin(0.5).setDepth(11);
     this.tweens.add({ targets: t, y: y - TILE * 1.1, alpha: 0, duration: 1000, ease: 'Cubic.easeOut', onComplete: () => t.destroy() });
   }

@@ -6,6 +6,7 @@ import { progress } from '../../core/progress';
 import { levelReward, type LevelReward, type LevelStats } from '../../core/rules';
 import { GameBridge, type GamePhase, type HudState, type RunSummary } from '../../game/bridge';
 import { LEVELS } from '../../game/levels';
+import { getTheme } from '../../themes';
 import type { Dir } from '../../game/types';
 import { useProgress } from '../hooks/useProgress';
 import { useMediaQuery } from '../hooks/useMediaQuery';
@@ -17,9 +18,9 @@ type Result =
   | { kind: 'complete'; stats: LevelStats; reward: LevelReward; newBest: boolean }
   | { kind: 'over'; summary: RunSummary; newBest: boolean; coinsEarned: number };
 
-async function fontsReady() {
+async function fontsReady(fonts: string[]) {
   try {
-    await Promise.all([document.fonts.load('30px Bungee'), document.fonts.load('14px "Press Start 2P"')]);
+    await Promise.all(fonts.map((f) => document.fonts.load(f)));
   } catch {
     // Fallback fonts are fine.
   }
@@ -30,7 +31,7 @@ export default function GameScreen({ startLevel, onQuit }: { startLevel: number;
   // The run is configured once at mount; changing difficulty/skin mid-run is not allowed.
   const [session] = useState(() => {
     const s = progress.getState();
-    return { difficulty: DIFFICULTIES[s.difficulty], skin: s.selectedSkin, reducedEffects: s.settings.reducedEffects };
+    return { difficulty: DIFFICULTIES[s.difficulty], skin: s.selectedSkin, theme: getTheme(s.theme), reducedEffects: s.settings.reducedEffects };
   });
   const hostRef = useRef<HTMLDivElement>(null);
   const bridgeRef = useRef<GameBridge | null>(null);
@@ -74,7 +75,7 @@ export default function GameScreen({ startLevel, onQuit }: { startLevel: number;
     });
 
     void (async () => {
-      await fontsReady();
+      await fontsReady(session.theme.canvasFonts);
       const { createGame } = await import('../../game/createGame');
       if (cancelled) return;
       game = createGame(host, { bridge, session, levelIndex: startLevel, score: 0, lives: session.difficulty.lives });

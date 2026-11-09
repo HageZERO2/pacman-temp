@@ -1,4 +1,4 @@
-import type { SkinId } from '../game/types';
+import type { SkinId } from '../../game/types';
 
 type Ctx = CanvasRenderingContext2D;
 
