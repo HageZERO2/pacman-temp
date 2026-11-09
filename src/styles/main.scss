@@ -1,6 +1,11 @@
+@use 'themes/christmas';
+@use 'themes/cyberpunk';
+@use 'themes/voxel';
+@use 'themes/pixel';
 @use 'base';
 @use 'backdrop';
 @use 'menu';
 @use 'screens';
 @use 'collection';
 @use 'play';
+@use 'theme-picker';
