@@ -8,15 +8,6 @@ export const frozenKingdom: LevelDef = {
   playerSpeed: 7.5,
   enemySpeedScale: 1.06,
   frightenedScale: 0.85,
-  theme: {
-    sky: ['#0a2348', '#030a1c'],
-    wall: '#3a8fd6',
-    wallDark: '#174a85',
-    wallEdge: '#bdf3ff',
-    style: 'ice',
-    accent: '#5ee7ff',
-    lights: ['#bdf3ff', '#7cc7ff', '#e0b0ff', '#ffffff'],
-  },
   map: [
     '###################',
     '#o...#.......#...o#',
